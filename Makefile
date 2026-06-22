@@ -1,4 +1,4 @@
-.PHONY: help setup install schema load inspect validate ratios test report dashboard api clean reset
+.PHONY: help setup install schema load inspect validate review fix ratios test report dashboard api clean reset
 
 help:
 	@echo ""
@@ -9,6 +9,8 @@ help:
 	@echo "  load       Reset DB + load all 12 source files + verify row counts"
 	@echo "  inspect    Inspect data/raw/ files (columns, row counts)"
 	@echo "  validate   Run 16 DQ rules → output/validation_failures.csv"
+	@echo "  review     Sample 5 companies, write manual_review_report.txt"
+	@echo "  fix        Retry ERROR/SKIPPED files from load_audit.csv"
 	@echo "  ratios     Compute financial ratios"
 	@echo "  test       Run pytest (tests/etl/)"
 	@echo "  dashboard  Launch Streamlit dashboard"
@@ -31,6 +33,12 @@ inspect:
 
 validate:
 	python src/etl/validator.py
+
+review:
+	python src/etl/manual_review.py
+
+fix:
+	python src/etl/fix_loader.py
 
 ratios:
 	python src/etl/normaliser.py
