@@ -1,4 +1,4 @@
-.PHONY: help setup install schema load inspect validate review fix ratios test report dashboard api clean reset
+.PHONY: help setup install schema load inspect validate review fix demo explore retro ratios test report dashboard api clean reset
 
 help:
 	@echo ""
@@ -11,6 +11,9 @@ help:
 	@echo "  validate   Run 16 DQ rules → output/validation_failures.csv"
 	@echo "  review     Sample 5 companies, write manual_review_report.txt"
 	@echo "  fix        Retry ERROR/SKIPPED files from load_audit.csv"
+	@echo "  demo       End-to-end Sprint 1 demo"
+	@echo "  explore    Run 10 exploratory queries (tabulate output)"
+	@echo "  retro      Open retrospective.md"
 	@echo "  ratios     Compute financial ratios"
 	@echo "  test       Run pytest (tests/etl/)"
 	@echo "  dashboard  Launch Streamlit dashboard"
@@ -39,6 +42,15 @@ review:
 
 fix:
 	python src/etl/fix_loader.py
+
+demo:
+	python src/etl/demo.py
+
+explore:
+	python notebooks/exploratory_queries.py
+
+retro:
+	open reports/retrospective.md 2>/dev/null || cat reports/retrospective.md
 
 ratios:
 	python src/etl/normaliser.py
