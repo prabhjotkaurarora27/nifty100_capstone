@@ -320,15 +320,16 @@ class TestLoadTable:
         assert result == 1
         conn.close()
 
-    # 3 – supplementary load appends data
-    def test_supplementary_load_appends(self):
+    # 3 – each load replaces the table (pipeline uses replace for all tables)
+    def test_supplementary_load_replaces(self):
         df1 = pd.DataFrame({"ticker": ["TCS", "INFY"]})
         df2 = pd.DataFrame({"ticker": ["RELIANCE", "WIPRO"]})
         conn = self._make_conn()
         load_table(df1, "stock_prices", "supplementary", conn)
         load_table(df2, "stock_prices", "supplementary", conn)
+        # Second call replaces → only df2's 2 rows remain
         result = conn.execute("SELECT COUNT(*) FROM stock_prices").fetchone()[0]
-        assert result == 4
+        assert result == 2
         conn.close()
 
     # 4 – load returns correct rows_loaded

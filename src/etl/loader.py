@@ -70,91 +70,103 @@ logger.add(OUTPUT_DIR / "pipeline.log", rotation="10 MB", level="DEBUG", encodin
 #              "supplementary" → if_exists="append"
 
 SOURCE_FILES: list[dict] = [
-    # ── CORE (7) ──────────────────────────────────────────────────────────
+    # ── CORE (7) — header is on row 1 (0-indexed) due to branding row ─────
     {
-        "filename": "companies.xlsx",
-        "table":    "companies",
-        "type":     "core",
+        "filename":   "companies.xlsx",
+        "table":      "companies",
+        "type":       "core",
+        "header_row": 1,
         "year_cols":   [],
-        "ticker_cols": ["ticker", "symbol", "nse_symbol", "bse_symbol"],
+        "ticker_cols": ["id", "company_id"],
     },
     {
-        "filename": "profit_and_loss.xlsx",
-        "table":    "profitandloss",
-        "type":     "core",
-        "year_cols":   ["year", "fiscal_year", "fy"],
-        "ticker_cols": ["ticker", "symbol"],
+        "filename":   "profitandloss.xlsx",
+        "table":      "profitandloss",
+        "type":       "core",
+        "header_row": 1,
+        "year_cols":   ["year"],
+        "ticker_cols": ["company_id"],
     },
     {
-        "filename": "balance_sheet.xlsx",
-        "table":    "balancesheet",
-        "type":     "core",
-        "year_cols":   ["year", "fiscal_year", "fy"],
-        "ticker_cols": ["ticker", "symbol"],
+        "filename":   "balancesheet.xlsx",
+        "table":      "balancesheet",
+        "type":       "core",
+        "header_row": 1,
+        "year_cols":   ["year"],
+        "ticker_cols": ["company_id"],
     },
     {
-        "filename": "cash_flow.xlsx",
-        "table":    "cashflow",
-        "type":     "core",
-        "year_cols":   ["year", "fiscal_year", "fy"],
-        "ticker_cols": ["ticker", "symbol"],
+        "filename":   "cashflow.xlsx",
+        "table":      "cashflow",
+        "type":       "core",
+        "header_row": 1,
+        "year_cols":   ["year"],
+        "ticker_cols": ["company_id"],
     },
     {
-        "filename": "analysis.xlsx",
-        "table":    "analysis",
-        "type":     "core",
-        "year_cols":   ["year", "fiscal_year"],
-        "ticker_cols": ["ticker", "symbol"],
-    },
-    {
-        "filename": "documents.xlsx",
-        "table":    "documents",
-        "type":     "core",
-        "year_cols":   ["year", "fiscal_year"],
-        "ticker_cols": ["ticker", "symbol"],
-    },
-    {
-        "filename": "pros_and_cons.xlsx",
-        "table":    "prosandcons",
-        "type":     "core",
+        "filename":   "analysis.xlsx",
+        "table":      "analysis",
+        "type":       "core",
+        "header_row": 1,
         "year_cols":   [],
-        "ticker_cols": ["ticker", "symbol"],
+        "ticker_cols": ["company_id"],
     },
-    # ── SUPPLEMENTARY (5) ─────────────────────────────────────────────────
     {
-        "filename": "sectors.xlsx",
-        "table":    "sectors",
-        "type":     "supplementary",
+        "filename":   "documents.xlsx",
+        "table":      "documents",
+        "type":       "core",
+        "header_row": 1,
+        "year_cols":   ["year", "Year"],
+        "ticker_cols": ["company_id"],
+    },
+    {
+        "filename":   "prosandcons.xlsx",
+        "table":      "prosandcons",
+        "type":       "core",
+        "header_row": 1,
         "year_cols":   [],
-        "ticker_cols": ["ticker", "symbol"],
+        "ticker_cols": ["company_id"],
     },
+    # ── SUPPLEMENTARY (5) — clean headers, no branding row ────────────────
     {
-        "filename": "stock_prices.csv",
-        "table":    "stock_prices",
-        "type":     "supplementary",
+        "filename":   "sectors.xlsx",
+        "table":      "sectors",
+        "type":       "supplementary",
+        "header_row": 0,
         "year_cols":   [],
-        "ticker_cols": ["ticker", "symbol"],
+        "ticker_cols": ["company_id"],
     },
     {
-        "filename": "financial_ratios.xlsx",
-        "table":    "financial_ratios",
-        "type":     "supplementary",
-        "year_cols":   ["year", "fiscal_year", "fy"],
-        "ticker_cols": ["ticker", "symbol"],
-    },
-    {
-        "filename": "peer_groups.xlsx",
-        "table":    "peer_groups",
-        "type":     "supplementary",
+        "filename":   "stock_prices.xlsx",
+        "table":      "stock_prices",
+        "type":       "supplementary",
+        "header_row": 0,
         "year_cols":   [],
-        "ticker_cols": ["ticker", "symbol"],
+        "ticker_cols": ["company_id"],
     },
     {
-        "filename": "prosandcons_extra.csv",
-        "table":    "prosandcons",
-        "type":     "supplementary",
+        "filename":   "financial_ratios.xlsx",
+        "table":      "financial_ratios",
+        "type":       "supplementary",
+        "header_row": 0,
+        "year_cols":   ["year"],
+        "ticker_cols": ["company_id"],
+    },
+    {
+        "filename":   "peer_groups.xlsx",
+        "table":      "peer_groups",
+        "type":       "supplementary",
+        "header_row": 0,
         "year_cols":   [],
-        "ticker_cols": ["ticker", "symbol"],
+        "ticker_cols": ["company_id"],
+    },
+    {
+        "filename":   "market_cap.xlsx",
+        "table":      "financial_ratios",
+        "type":       "supplementary",
+        "header_row": 0,
+        "year_cols":   ["year"],
+        "ticker_cols": ["company_id"],
     },
 ]
 
@@ -214,13 +226,21 @@ def apply_normalisations(
     return df, rows_rejected
 
 
-def _read_file(path: Path) -> pd.DataFrame:
-    """Read a .xlsx or .csv file into a DataFrame."""
+def _read_file(path: Path, header_row: int = 0) -> pd.DataFrame:
+    """Read a .xlsx or .csv file into a DataFrame.
+
+    Parameters
+    ----------
+    header_row : int
+        Row index (0-based) to use as column names.  Core Bluestock files
+        have a branding title in row 0 and real headers in row 1, so pass
+        ``header_row=1`` for those files.
+    """
     suffix = path.suffix.lower()
     if suffix in (".xlsx", ".xls"):
-        return pd.read_excel(path, engine="openpyxl")
+        return pd.read_excel(path, engine="openpyxl", header=header_row)
     elif suffix == ".csv":
-        return pd.read_csv(path, encoding="utf-8", low_memory=False)
+        return pd.read_csv(path, encoding="utf-8", low_memory=False, header=header_row)
     else:
         raise ValueError(f"Unsupported file extension: {suffix}")
 
@@ -232,12 +252,19 @@ def load_table(
     conn: sqlite3.Connection,
 ) -> int:
     """
-    Write DataFrame to SQLite.  Core → replace, Supplementary → append.
+    Write DataFrame to SQLite.
+
+    Strategy: always use ``if_exists="replace"`` so the actual columns in the
+    source Excel/CSV drive the table structure.  This sidesteps any mismatch
+    between the pre-defined schema DDL and the real data columns.  FK
+    integrity is verified as a separate post-load PRAGMA check.
 
     Returns rows_loaded.
     """
-    if_exists = "replace" if load_type == "core" else "append"
-    df.to_sql(table, conn, if_exists=if_exists, index=False)
+    # Disable FK checks while loading to avoid constraint violations during
+    # the replace/reload cycle; re-enabled in _run_foreign_key_check().
+    conn.execute("PRAGMA foreign_keys = OFF;")
+    df.to_sql(table, conn, if_exists="replace", index=False)
     cur = conn.execute(f"SELECT COUNT(*) FROM [{table}]")
     count = cur.fetchone()[0]
     logger.info(f"  [{table}] total rows in table after load: {count}")
@@ -287,13 +314,14 @@ def run_pipeline() -> None:
 
     try:
         for entry in tqdm(SOURCE_FILES, desc="Loading tables", unit="file"):
-            filename   = entry["filename"]
-            table      = entry["table"]
-            load_type  = entry["type"]
-            year_cols  = entry["year_cols"]
+            filename    = entry["filename"]
+            table       = entry["table"]
+            load_type   = entry["type"]
+            year_cols   = entry["year_cols"]
             ticker_cols = entry["ticker_cols"]
-            file_path  = DATA_RAW_DIR / filename
-            ts         = datetime.now().isoformat(timespec="seconds")
+            header_row  = entry.get("header_row", 0)
+            file_path   = DATA_RAW_DIR / filename
+            ts          = datetime.now().isoformat(timespec="seconds")
 
             record = {
                 "filename": filename,
@@ -314,7 +342,7 @@ def run_pipeline() -> None:
 
             try:
                 logger.info(f"Processing: {filename} → [{table}]")
-                df = _read_file(file_path)
+                df = _read_file(file_path, header_row=header_row)
                 df = _normalise_columns(df)
                 df, rows_rejected = apply_normalisations(df, year_cols, ticker_cols)
                 rows_loaded = load_table(df, table, load_type, conn)
