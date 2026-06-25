@@ -165,15 +165,15 @@ def step5_highlights(conn: sqlite3.Connection) -> None:
     _hdr("Step 5 — Highlight Queries")
 
     queries = [
-        ("Top company by revenue (latest year)",
-         """SELECT c.name, c.ticker, pl.year, ROUND(pl.revenue,2) AS revenue_cr
-            FROM profitandloss pl JOIN companies c ON pl.company_id=c.company_id
-            WHERE pl.year=(SELECT MAX(year) FROM profitandloss WHERE company_id=pl.company_id)
-            ORDER BY pl.revenue DESC LIMIT 1"""),
-        ("Sector with most companies",
-         """SELECT s.sector_name, COUNT(*) AS n
-            FROM companies c JOIN sectors s ON c.sector_id=s.sector_id
-            GROUP BY s.sector_name ORDER BY n DESC LIMIT 1"""),
+        ("Top company by sales (latest year)",
+         """SELECT c.company_name, pl.year, ROUND(pl.sales,2) AS sales_cr
+            FROM profitandloss pl JOIN companies c ON pl.company_id = c.id
+            WHERE pl.year = (SELECT MAX(year) FROM profitandloss WHERE company_id = pl.company_id)
+            ORDER BY pl.sales DESC LIMIT 1"""),
+        ("Broad sector with most companies",
+         """SELECT s.broad_sector, COUNT(*) AS n
+            FROM sectors s
+            GROUP BY s.broad_sector ORDER BY n DESC LIMIT 1"""),
         ("Year with most financial data (P&L rows)",
          """SELECT year, COUNT(*) AS rows FROM profitandloss
             GROUP BY year ORDER BY rows DESC LIMIT 1"""),
