@@ -15,11 +15,11 @@ env/
 # Environment / secrets
 .env
 
-# Database (generated)
-db/nifty100.db
+# Database — tracked for submission
+# db/nifty100.db
 
-# Output (generated)
-output/
+# Output — tracked for submission
+# output/
 
 # Jupyter checkpoints
 .ipynb_checkpoints/

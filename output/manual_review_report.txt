@@ -1,0 +1,28 @@
+============================================================
+  NIFTY 100 — Manual DQ Review Report
+  Generated : 2026-06-22 18:28:18
+  DB path   : /Users/prabhjotkaur/Desktop/nifty100_capstone/db/nifty100.db
+  Failures  : validation_failures.csv (not found)
+============================================================
+
+  ✅  No CRITICAL DQ failures.
+
+  SECTION 1 — Random Sample Review (0 companies)
+
+============================================================
+  SECTION 2 — Companies with < 5 Years P&L Coverage (0 found)
+============================================================
+
+  ✅  All companies have ≥ 5 years of P&L data.
+
+
+============================================================
+  FINAL SUMMARY
+============================================================
+  Companies sampled : 0
+  PASS              : 0
+  WARN              : 0
+  FAIL              : 0
+  CRITICAL flags    : 0
+  Low coverage (<5y): 0
+============================================================

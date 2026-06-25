@@ -1,0 +1,13 @@
+filename,table,type,status,rows_loaded,rows_rejected,timestamp,error
+companies.xlsx,companies,core,still_missing,0,0,2026-06-22T18:28:18,
+profit_and_loss.xlsx,profitandloss,core,still_missing,0,0,2026-06-22T18:28:18,
+balance_sheet.xlsx,balancesheet,core,still_missing,0,0,2026-06-22T18:28:18,
+cash_flow.xlsx,cashflow,core,still_missing,0,0,2026-06-22T18:28:18,
+analysis.xlsx,analysis,core,still_missing,0,0,2026-06-22T18:28:18,
+documents.xlsx,documents,core,still_missing,0,0,2026-06-22T18:28:18,
+pros_and_cons.xlsx,prosandcons,core,still_missing,0,0,2026-06-22T18:28:18,
+sectors.xlsx,sectors,supplementary,still_missing,0,0,2026-06-22T18:28:18,
+stock_prices.csv,stock_prices,supplementary,still_missing,0,0,2026-06-22T18:28:18,
+financial_ratios.xlsx,financial_ratios,supplementary,still_missing,0,0,2026-06-22T18:28:18,
+peer_groups.xlsx,peer_groups,supplementary,still_missing,0,0,2026-06-22T18:28:18,
+prosandcons_extra.csv,prosandcons,supplementary,still_missing,0,0,2026-06-22T18:28:18,
