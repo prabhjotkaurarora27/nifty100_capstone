@@ -80,7 +80,7 @@ def step1_db_stats(conn: sqlite3.Connection) -> dict[str, int]:
             (cnt,) = conn.execute(f"SELECT COUNT(*) FROM [{tbl}]").fetchone()
         except Exception:
             cnt = -1
-        icon = "✅" if cnt >= 0 else "❌"
+        icon = "[OK]" if cnt >= 0 else "[ERR]"
         rows.append((icon, tbl, cnt))
         counts[tbl] = cnt
     _tbl(rows, ["", "Table", "Rows"])
@@ -98,7 +98,7 @@ def step2_fk_check(conn: sqlite3.Connection) -> bool:
             print(f"     {v}")
         ok = False
     else:
-        print("  ✅  0 violations — foreign key integrity confirmed")
+        print("  [OK]  0 violations — foreign key integrity confirmed")
         ok = True
     print()
     return ok
@@ -153,7 +153,7 @@ def step4_dq_summary() -> tuple[int, int, int]:
     if rows:
         _tbl(rows, ["Rule", "Severity", "Failures", ""])
     else:
-        print("  ✅  No failures recorded")
+        print("  [OK]  No failures recorded")
 
     print(f"\n  Total: {total}  |  CRITICAL: {critical}  "
           f"WARNING: {warning}  INFO: {info}")
@@ -218,7 +218,7 @@ def step6_exit_criteria(counts: dict[str, int],
         if result is None:
             icon, tag = "⚠️ ", "MANUAL"
         elif result:
-            icon, tag = "✅", "PASS"
+            icon, tag = "[OK]", "PASS"
         else:
             icon, tag = "❌", "FAIL"
             all_pass = False
@@ -260,7 +260,7 @@ def main() -> None:
 
     elapsed = time.time() - t0
     _sep()
-    verdict = "✅  Sprint 1 PASSED" if all_pass else "⚠️  Sprint 1 — some criteria need attention"
+    verdict = "[PASSED]  Sprint 1 PASSED" if all_pass else "[WARN]  Sprint 1 — some criteria need attention"
     print(f"  {verdict}")
     print(f"  Runtime: {elapsed:.2f}s")
     _sep()
