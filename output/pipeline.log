@@ -1688,3 +1688,161 @@ sqlite3.OperationalError: table financial_ratios has no column named id
 2026-06-27 16:35:06.863 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
 2026-06-27 16:35:06.863 | INFO     | src.etl.validator:run_all_checks:471 - DQ-16: 1 failure(s)
 2026-06-27 16:35:06.863 | INFO     | src.etl.validator:run_all_checks:471 - DQ-16: 1 failure(s)
+2026-07-10 23:36:24.187 | DEBUG    | src.etl.loader:apply_normalisations:215 -   normalised ticker column 'ticker'
+2026-07-10 23:36:24.187 | DEBUG    | src.etl.loader:apply_normalisations:215 -   normalised ticker column 'ticker'
+2026-07-10 23:36:24.190 | DEBUG    | src.etl.loader:apply_normalisations:215 -   normalised ticker column 'ticker'
+2026-07-10 23:36:24.190 | DEBUG    | src.etl.loader:apply_normalisations:215 -   normalised ticker column 'ticker'
+2026-07-10 23:36:24.191 | DEBUG    | src.etl.loader:apply_normalisations:210 -   normalised year column 'fiscal_year'
+2026-07-10 23:36:24.191 | DEBUG    | src.etl.loader:apply_normalisations:210 -   normalised year column 'fiscal_year'
+2026-07-10 23:36:24.193 | DEBUG    | src.etl.loader:apply_normalisations:210 -   normalised year column 'year'
+2026-07-10 23:36:24.193 | DEBUG    | src.etl.loader:apply_normalisations:210 -   normalised year column 'year'
+2026-07-10 23:36:24.193 | DEBUG    | src.etl.loader:apply_normalisations:215 -   normalised ticker column 'ticker'
+2026-07-10 23:36:24.193 | DEBUG    | src.etl.loader:apply_normalisations:215 -   normalised ticker column 'ticker'
+2026-07-10 23:36:24.195 | INFO     | src.etl.loader:load_table:270 -   [companies] total rows in table after load: 2
+2026-07-10 23:36:24.195 | INFO     | src.etl.loader:load_table:270 -   [companies] total rows in table after load: 2
+2026-07-10 23:36:24.196 | INFO     | src.etl.loader:load_table:270 -   [companies] total rows in table after load: 3
+2026-07-10 23:36:24.196 | INFO     | src.etl.loader:load_table:270 -   [companies] total rows in table after load: 3
+2026-07-10 23:36:24.196 | INFO     | src.etl.loader:load_table:270 -   [companies] total rows in table after load: 1
+2026-07-10 23:36:24.196 | INFO     | src.etl.loader:load_table:270 -   [companies] total rows in table after load: 1
+2026-07-10 23:36:24.197 | INFO     | src.etl.loader:load_table:270 -   [stock_prices] total rows in table after load: 2
+2026-07-10 23:36:24.197 | INFO     | src.etl.loader:load_table:270 -   [stock_prices] total rows in table after load: 2
+2026-07-10 23:36:24.197 | INFO     | src.etl.loader:load_table:270 -   [stock_prices] total rows in table after load: 2
+2026-07-10 23:36:24.197 | INFO     | src.etl.loader:load_table:270 -   [stock_prices] total rows in table after load: 2
+2026-07-10 23:36:24.198 | INFO     | src.etl.loader:load_table:270 -   [test_table] total rows in table after load: 10
+2026-07-10 23:36:24.198 | INFO     | src.etl.loader:load_table:270 -   [test_table] total rows in table after load: 10
+2026-07-10 23:36:24.198 | INFO     | src.etl.loader:load_table:270 -   [empty_table] total rows in table after load: 0
+2026-07-10 23:36:24.198 | INFO     | src.etl.loader:load_table:270 -   [empty_table] total rows in table after load: 0
+2026-07-10 23:36:24.199 | INFO     | src.etl.loader:load_table:270 -   [test_tbl] total rows in table after load: 1
+2026-07-10 23:36:24.199 | INFO     | src.etl.loader:load_table:270 -   [test_tbl] total rows in table after load: 1
+2026-07-10 23:36:24.200 | INFO     | src.etl.loader:load_table:270 -   [test_tbl] total rows in table after load: 1
+2026-07-10 23:36:24.200 | INFO     | src.etl.loader:load_table:270 -   [test_tbl] total rows in table after load: 1
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-01: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-01: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-02: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-02: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-03: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-03: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-04: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-04: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-05: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-05: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-06: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-06: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-07: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-07: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-08: ✅ no failures
+2026-07-10 23:36:24.217 | INFO     | src.etl.validator:run_all_checks:473 - DQ-08: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-09: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-09: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-10: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-10: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-11: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-11: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-12: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-12: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-13: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-13: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-14: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-14: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-16: ✅ no failures
+2026-07-10 23:36:24.218 | INFO     | src.etl.validator:run_all_checks:473 - DQ-16: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-01: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-01: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-02: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-02: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-03: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-03: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-04: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-04: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-05: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-05: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-06: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-06: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-07: ✅ no failures
+2026-07-10 23:36:24.219 | INFO     | src.etl.validator:run_all_checks:473 - DQ-07: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-08: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-08: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-09: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-09: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-10: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-10: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-11: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-11: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-12: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-12: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-13: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-13: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-14: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-14: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-16: ✅ no failures
+2026-07-10 23:36:24.220 | INFO     | src.etl.validator:run_all_checks:473 - DQ-16: ✅ no failures
+2026-07-10 23:36:24.221 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-01: 1 failure(s)
+2026-07-10 23:36:24.221 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-01: 1 failure(s)
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-02: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-02: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-03: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-03: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-04: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-04: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-05: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-05: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-06: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-06: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-07: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-07: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-08: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-08: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-09: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-09: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-10: ✅ no failures
+2026-07-10 23:36:24.221 | INFO     | src.etl.validator:run_all_checks:473 - DQ-10: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-11: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-11: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-12: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-12: ✅ no failures
+2026-07-10 23:36:24.222 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-13: 1 failure(s)
+2026-07-10 23:36:24.222 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-13: 1 failure(s)
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-14: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-14: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-16: ✅ no failures
+2026-07-10 23:36:24.222 | INFO     | src.etl.validator:run_all_checks:473 - DQ-16: ✅ no failures
+2026-07-10 23:36:24.225 | INFO     | src.etl.validator:write_failures:490 - Validation failures written → /private/var/folders/t0/kxfvfd0s4812n86ch12pp7f40000gn/T/pytest-of-prabhjotkaur/pytest-0/test_write_failures_creates_cs0/validation_failures.csv  (1 rows)
+2026-07-10 23:36:24.225 | INFO     | src.etl.validator:write_failures:490 - Validation failures written → /private/var/folders/t0/kxfvfd0s4812n86ch12pp7f40000gn/T/pytest-of-prabhjotkaur/pytest-0/test_write_failures_creates_cs0/validation_failures.csv  (1 rows)
+2026-07-10 23:36:24.226 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-01: 1 failure(s)
+2026-07-10 23:36:24.226 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-01: 1 failure(s)
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-02: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-02: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-03: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-03: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-04: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-04: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-05: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-05: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-06: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-06: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-07: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-07: ✅ no failures
+2026-07-10 23:36:24.226 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-08: 1 failure(s)
+2026-07-10 23:36:24.226 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-08: 1 failure(s)
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-09: ✅ no failures
+2026-07-10 23:36:24.226 | INFO     | src.etl.validator:run_all_checks:473 - DQ-09: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-10: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-10: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-11: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-11: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-12: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-12: ✅ no failures
+2026-07-10 23:36:24.227 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-13: 1 failure(s)
+2026-07-10 23:36:24.227 | ERROR    | src.etl.validator:run_all_checks:471 - DQ-13: 1 failure(s)
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-14: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-14: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:473 - DQ-15: ✅ no failures
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:471 - DQ-16: 1 failure(s)
+2026-07-10 23:36:24.227 | INFO     | src.etl.validator:run_all_checks:471 - DQ-16: 1 failure(s)

@@ -1,0 +1,58 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# config/screener_config.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+# Nifty 100 Financial Screener — Threshold Configuration
+# Sprint 3 — Day 15
+#
+# ANALYST GUIDE
+# -------------
+# All thresholds are OPTIONAL — omit or set to null to disable a filter.
+# Units follow the financial_ratios table:
+#   - Percentages stored as plain floats (e.g. ROE 15% → 15.0)
+#   - Crore values stored as Cr (e.g. 5000 Crore → 5000)
+#   - Ratios stored as plain floats (e.g. D/E 1.0 → 1.0)
+#
+# Special handling (do NOT modify these comments):
+#   - debt_to_equity_max: Financials sector companies auto-skipped
+#   - interest_coverage_min: "Debt Free" label treated as ICR = infinity
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Profitability ──────────────────────────────────────────────────────────────
+filters:
+  roe_min:                12.0    # Return on Equity (%) — minimum
+  opm_min:                10.0    # Operating Profit Margin (%) — minimum
+  net_profit_min:        null     # Net Profit absolute (Cr) — minimum; null = disabled
+
+# ── Leverage & Debt ────────────────────────────────────────────────────────────
+  debt_to_equity_max:     2.0     # D/E ratio — maximum; Financials sector auto-skipped
+  interest_coverage_min:  2.0     # ICR — minimum; "Debt Free" always passes
+
+# ── Cash Flow ──────────────────────────────────────────────────────────────────
+  fcf_min:                0.0     # Free Cash Flow (Cr) — minimum (0 = FCF positive)
+
+# ── Growth (CAGR) ──────────────────────────────────────────────────────────────
+  revenue_cagr_5yr_min:   8.0     # Revenue CAGR 5yr (%) — minimum
+  pat_cagr_5yr_min:       8.0     # PAT CAGR 5yr (%) — minimum
+  eps_cagr_min:           5.0     # EPS CAGR 5yr (%) — minimum
+  revenue_cagr_3yr_min:  null     # Revenue CAGR 3yr (%) — minimum; null = disabled
+
+# ── Valuation ──────────────────────────────────────────────────────────────────
+  pe_max:               null      # Price-to-Earnings — maximum; null = disabled
+  pb_max:               null      # Price-to-Book — maximum; null = disabled
+  dividend_yield_min:   null      # Dividend Yield (%) — minimum; null = disabled
+
+# ── Size ───────────────────────────────────────────────────────────────────────
+  market_cap_min:       null      # Market Cap (Cr) — minimum; null = disabled
+  sales_min:            null      # Revenue / Sales (Cr) — minimum; null = disabled
+
+  # Asset quality
+  asset_turnover_min:   null      # Asset Turnover ratio — minimum; null = disabled
+
+# ── Sorting ────────────────────────────────────────────────────────────────────
+sort_by: composite_quality_score
+sort_ascending: false
+
+# ── Financials sector D/E exemption ───────────────────────────────────────────
+# When debt_to_equity_max filter is active, companies in this broad_sector
+# are automatically excluded from the D/E filter (passed unconditionally).
+financials_sector_label: "Financials"
