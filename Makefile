@@ -1,73 +1,39 @@
-.PHONY: help setup install schema load inspect validate review fix demo explore retro ratios test report dashboard api clean reset
+.PHONY: help install load ratios test report dashboard api clean reset
 
 help:
 	@echo ""
-	@echo "  Nifty 100 Capstone — available targets"
-	@echo "  ────────────────────────────────────────"
-	@echo "  install    pip install -r requirements.txt"
-	@echo "  schema     Create SQLite schema (db/nifty100.db)"
-	@echo "  load       Reset DB + load all 12 source files + verify row counts"
-	@echo "  inspect    Inspect data/raw/ files (columns, row counts)"
-	@echo "  validate   Run 16 DQ rules → output/validation_failures.csv"
-	@echo "  review     Sample 5 companies, write manual_review_report.txt"
-	@echo "  fix        Retry ERROR/SKIPPED files from load_audit.csv"
-	@echo "  demo       End-to-end Sprint 1 demo"
-	@echo "  explore    Run 10 exploratory queries (tabulate output)"
-	@echo "  retro      Open retrospective.md"
-	@echo "  ratios     Compute financial ratios"
-	@echo "  test       Run pytest (tests/etl/)"
-	@echo "  dashboard  Launch Streamlit dashboard"
-	@echo "  api        Start Flask API server"
-	@echo "  clean      Remove __pycache__, output CSVs"
-	@echo "  reset      Drop and recreate nifty100.db"
+	@echo "  Nifty 100 Capstone — Quick Reference Targets"
+	@echo "  ──────────────────────────────────────────────"
+	@echo "  make load       Load raw files into db/nifty100.db"
+	@echo "  make ratios     Generate and populate financial_ratios table"
+	@echo "  make test       Run all 250 pytest unit tests (HTML report)"
+	@echo "  make report     Generate tearsheet, sector, and portfolio PDFs"
+	@echo "  make dashboard  Launch Streamlit dashboard on localhost:8501"
+	@echo "  make api        Launch FastAPI REST server on localhost:8000"
+	@echo "  make clean      Remove cache (.pyc) and temporary artifacts"
 	@echo ""
 
 install:
-	pip install -r requirements.txt
-
-schema:
-	python db/init_db.py
+	venv/bin/pip install -r requirements.txt
 
 load:
-	python src/etl/load_pipeline.py
-
-inspect:
-	python src/etl/file_inspector.py
-
-validate:
-	python src/etl/validator.py
-
-review:
-	python src/etl/manual_review.py
-
-fix:
-	python src/etl/fix_loader.py
-
-demo:
-	python src/etl/demo.py
-
-explore:
-	python notebooks/exploratory_queries.py
-
-retro:
-	open reports/retrospective.md 2>/dev/null || cat reports/retrospective.md
+	PYTHONPATH=. venv/bin/python3 src/etl/load_pipeline.py
 
 ratios:
-	python src/etl/normaliser.py
+	PYTHONPATH=. venv/bin/python3 src/analytics/ratios.py
 
 test:
-	python -m pytest tests/etl/ --tb=short -q --cov=src/etl --cov-report=term-missing
+	PYTHONPATH=. venv/bin/pytest tests/ --html=reports/pytest_report.html -v
+
+report:
+	PYTHONPATH=. venv/bin/python3 src/reports/batch_generator.py
 
 dashboard:
-	streamlit run src/dashboard/app.py
+	venv/bin/streamlit run src/dashboard/app.py
 
 api:
-	python src/api/app.py
+	venv/bin/uvicorn src.api.main:app --port 8000 --reload
 
 clean:
-	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -name "*.pyc" -delete 2>/dev/null || true
-
-reset:
-	rm -f db/nifty100.db
-	$(MAKE) schema
