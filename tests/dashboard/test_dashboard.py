@@ -6,7 +6,6 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import pandas as pd
-import pytest
 from src.analytics.valuation import run_valuation_analysis
 from src.dashboard.utils.db import (
     get_bs,
@@ -15,7 +14,6 @@ from src.dashboard.utils.db import (
     get_documents,
     get_peers,
     get_pl,
-    get_pros_cons,
     get_ratios,
     get_sectors,
     get_valuation,

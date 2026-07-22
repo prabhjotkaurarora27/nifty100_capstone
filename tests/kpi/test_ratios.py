@@ -34,6 +34,7 @@ from src.analytics.ratios import (
 # Day 08 — Return & Margin Ratios  (tests 1–8)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestNetProfitMargin:
     """Tests 1–2"""
 
@@ -66,8 +67,9 @@ class TestOperatingProfitMargin:
         """Stored OPM differs by >1 pp — warning must be emitted."""
         with caplog.at_level(logging.WARNING, logger="src.analytics.ratios"):
             result = operating_profit_margin(
-                300.0, 1000.0,
-                opm_percentage=27.0,   # stored = 27%, computed = 30% → diff 3%
+                300.0,
+                1000.0,
+                opm_percentage=27.0,  # stored = 27%, computed = 30% → diff 3%
                 company_id="TEST",
                 year=2023,
             )
@@ -78,8 +80,9 @@ class TestOperatingProfitMargin:
         """Stored OPM within 1 pp → no warning."""
         with caplog.at_level(logging.WARNING, logger="src.analytics.ratios"):
             operating_profit_margin(
-                300.0, 1000.0,
-                opm_percentage=30.5,   # diff = 0.5% — within tolerance
+                300.0,
+                1000.0,
+                opm_percentage=30.5,  # diff = 0.5% — within tolerance
                 company_id="TEST",
                 year=2023,
             )
@@ -111,12 +114,16 @@ class TestReturnOnCapitalEmployed:
 
     def test_non_financial_company(self):
         # EBIT=200, equity=500, reserves=300, borrowings=200 → CE=1000 → 20%
-        result = return_on_capital_employed(200.0, 500.0, 300.0, 200.0, is_financial=False)
+        result = return_on_capital_employed(
+            200.0, 500.0, 300.0, 200.0, is_financial=False
+        )
         assert result == pytest.approx(20.0, abs=1e-3)
 
     def test_financial_company_excludes_borrowings(self):
         # EBIT=100, equity=200, reserves=300 → CE=500 → 20%
-        result = return_on_capital_employed(100.0, 200.0, 300.0, 10_000.0, is_financial=True)
+        result = return_on_capital_employed(
+            100.0, 200.0, 300.0, 10_000.0, is_financial=True
+        )
         assert result == pytest.approx(20.0, abs=1e-3)
 
     def test_zero_capital_employed_returns_none(self):
@@ -140,6 +147,7 @@ class TestReturnOnAssets:
 # ─────────────────────────────────────────────────────────────────────────────
 # Day 09 — Leverage & Liquidity Ratios  (tests 9–16)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestDebtToEquity:
     """Tests 9–10"""

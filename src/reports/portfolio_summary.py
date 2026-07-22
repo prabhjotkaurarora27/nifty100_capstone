@@ -6,7 +6,6 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import (
-    HRFlowable,
     PageBreak,
     Paragraph,
     SimpleDocTemplate,
@@ -160,7 +159,9 @@ def generate_portfolio_summary_pdf(output_pdf_path: Path = None) -> Path:
 
         # Top 6 KPIs Table with Trend Arrows
         story.append(
-            Paragraph("<b>📊 Key Financial Ratios & Recent YoY Trend</b>", section_heading)
+            Paragraph(
+                "<b>📊 Key Financial Ratios & Recent YoY Trend</b>", section_heading
+            )
         )
 
         roe_val = latest.get("return_on_equity_pct")
@@ -184,9 +185,7 @@ def generate_portfolio_summary_pdf(output_pdf_path: Path = None) -> Path:
                 ),
                 Paragraph(f"<font size=14><b>{roe_arr}</b></font>", cell_style),
                 Paragraph(
-                    "High Efficiency"
-                    if roe_val and roe_val > 15
-                    else "Moderate",
+                    "High Efficiency" if roe_val and roe_val > 15 else "Moderate",
                     cell_style,
                 ),
             ],
@@ -198,9 +197,11 @@ def generate_portfolio_summary_pdf(output_pdf_path: Path = None) -> Path:
                 ),
                 Paragraph(f"<font size=14><b>{roce_arr}</b></font>", cell_style),
                 Paragraph(
-                    "Strong Capital Returns"
-                    if roce_val and roce_val > 15
-                    else "Moderate",
+                    (
+                        "Strong Capital Returns"
+                        if roce_val and roce_val > 15
+                        else "Moderate"
+                    ),
                     cell_style,
                 ),
             ],
@@ -211,38 +212,32 @@ def generate_portfolio_summary_pdf(output_pdf_path: Path = None) -> Path:
                 ),
                 Paragraph(f"<font size=14><b>{npm_arr}</b></font>", cell_style),
                 Paragraph(
-                    "High Margin"
-                    if npm_val and npm_val > 15
-                    else "Standard Margin",
+                    "High Margin" if npm_val and npm_val > 15 else "Standard Margin",
                     cell_style,
                 ),
             ],
             [
                 Paragraph("Debt to Equity (D/E)", cell_style),
-                Paragraph(
-                    f"{de_val:.2f}" if pd.notnull(de_val) else "N/A", cell_style
-                ),
+                Paragraph(f"{de_val:.2f}" if pd.notnull(de_val) else "N/A", cell_style),
                 Paragraph(f"<font size=14><b>{de_arr}</b></font>", cell_style),
                 Paragraph(
-                    "Conservative Leverage"
-                    if de_val and de_val < 1.0
-                    else "Elevated",
+                    "Conservative Leverage" if de_val and de_val < 1.0 else "Elevated",
                     cell_style,
                 ),
             ],
             [
                 Paragraph("Revenue CAGR (5yr)", cell_style),
                 Paragraph(
-                    f"{rev_cagr_val:.1f}%"
-                    if pd.notnull(rev_cagr_val)
-                    else "N/A",
+                    f"{rev_cagr_val:.1f}%" if pd.notnull(rev_cagr_val) else "N/A",
                     cell_style,
                 ),
                 Paragraph(f"<font size=14><b>{rev_arr}</b></font>", cell_style),
                 Paragraph(
-                    "Strong Growth"
-                    if rev_cagr_val and rev_cagr_val > 10
-                    else "Moderate Growth",
+                    (
+                        "Strong Growth"
+                        if rev_cagr_val and rev_cagr_val > 10
+                        else "Moderate Growth"
+                    ),
                     cell_style,
                 ),
             ],
@@ -254,17 +249,17 @@ def generate_portfolio_summary_pdf(output_pdf_path: Path = None) -> Path:
                 ),
                 Paragraph(f"<font size=14><b>{fcf_arr}</b></font>", cell_style),
                 Paragraph(
-                    "Positive Cash Generation"
-                    if fcf_val and fcf_val > 0
-                    else "Negative FCF",
+                    (
+                        "Positive Cash Generation"
+                        if fcf_val and fcf_val > 0
+                        else "Negative FCF"
+                    ),
                     cell_style,
                 ),
             ],
         ]
 
-        kpi_table = Table(
-            kpi_data, colWidths=[160, 120, 100, 160], repeatRows=1
-        )
+        kpi_table = Table(kpi_data, colWidths=[160, 120, 100, 160], repeatRows=1)
         kpi_table.setStyle(
             TableStyle(
                 [

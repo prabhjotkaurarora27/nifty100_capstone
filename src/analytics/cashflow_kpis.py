@@ -11,10 +11,7 @@ import csv
 import logging
 import sqlite3
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-import openpyxl
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
+from typing import List, Optional
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -185,9 +182,7 @@ def generate_capital_allocation_csv(
             )
             written += 1
 
-    logger.info(
-        "Capital allocation CSV written → %s  (%d rows)", output_path, written
-    )
+    logger.info("Capital allocation CSV written → %s  (%d rows)", output_path, written)
     return written
 
 
@@ -256,9 +251,7 @@ def generate_cashflow_intelligence():
             for c, p in zip(cfo_list, pat_list)
             if c is not None and p is not None and p != 0
         ]
-        avg_cfo_pat = (
-            sum(valid_ratios) / len(valid_ratios) if valid_ratios else None
-        )
+        avg_cfo_pat = sum(valid_ratios) / len(valid_ratios) if valid_ratios else None
 
         # 2. CapEx Intensity
         cfi_val = latest_cf.get("investing_activity")
@@ -298,9 +291,7 @@ def generate_cashflow_intelligence():
         # 5. FCF CAGR 5yr and FCF Conversion %
         fcf_hist = c_ratios["free_cash_flow_cr"].dropna()
         if len(fcf_hist) >= 5 and fcf_hist.iloc[-5] > 0 and fcf_hist.iloc[-1] > 0:
-            fcf_cagr = (
-                (fcf_hist.iloc[-1] / fcf_hist.iloc[-5]) ** (1 / 4) - 1
-            ) * 100
+            fcf_cagr = ((fcf_hist.iloc[-1] / fcf_hist.iloc[-5]) ** (1 / 4) - 1) * 100
         else:
             fcf_cagr = None
 
@@ -312,26 +303,22 @@ def generate_cashflow_intelligence():
         fcf_conv_pct = fcf_conv * 100 if fcf_conv is not None else None
 
         # 6. Capital Allocation Pattern Label
-        cap_alloc_lbl = classify_capital_allocation(
-            cfo_latest, cfi_val, cff_latest
-        )
+        cap_alloc_lbl = classify_capital_allocation(cfo_latest, cfi_val, cff_latest)
 
         intel_rows.append(
             {
                 "company_id": cid,
                 "sector": sec,
-                "cfo_quality_score": round(avg_cfo_pat, 2)
-                if avg_cfo_pat is not None
-                else None,
+                "cfo_quality_score": (
+                    round(avg_cfo_pat, 2) if avg_cfo_pat is not None else None
+                ),
                 "cfo_quality_label": cfo_label,
-                "capex_intensity_pct": round(capex_pct, 2)
-                if capex_pct is not None
-                else None,
+                "capex_intensity_pct": (
+                    round(capex_pct, 2) if capex_pct is not None else None
+                ),
                 "capex_label": capex_lbl,
                 "fcf_cagr_5yr": round(fcf_cagr, 2) if fcf_cagr else None,
-                "fcf_conversion_pct": round(fcf_conv_pct, 2)
-                if fcf_conv_pct
-                else None,
+                "fcf_conversion_pct": round(fcf_conv_pct, 2) if fcf_conv_pct else None,
                 "distress_flag": "YES" if distress_flag else "NO",
                 "deleveraging_flag": "YES" if deleveraging_flag else "NO",
                 "capital_allocation_label": cap_alloc_lbl,
@@ -349,9 +336,7 @@ def generate_cashflow_intelligence():
     distress_df = pd.DataFrame(distress_rows)
     distress_csv = OUTPUT_DIR / "distress_alerts.csv"
     distress_df.to_csv(distress_csv, index=False)
-    print(
-        f"✅ Exported {len(distress_df)} distress alerts to {distress_csv.name}"
-    )
+    print(f"✅ Exported {len(distress_df)} distress alerts to {distress_csv.name}")
 
     # Day 32 — Generate output/pattern_changes.csv (YoY pattern shifts)
     cap_csv_path = OUTPUT_DIR / "capital_allocation.csv"
@@ -378,9 +363,7 @@ def generate_cashflow_intelligence():
         changes_df = pd.DataFrame(pattern_changes)
         changes_csv = OUTPUT_DIR / "pattern_changes.csv"
         changes_df.to_csv(changes_csv, index=False)
-        print(
-            f"✅ Exported {len(changes_df)} YoY pattern shifts to {changes_csv.name}"
-        )
+        print(f"✅ Exported {len(changes_df)} YoY pattern shifts to {changes_csv.name}")
 
     return intel_df, distress_df
 

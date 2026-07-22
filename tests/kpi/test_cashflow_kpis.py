@@ -34,6 +34,7 @@ from src.analytics.cashflow_kpis import (
 # Test 1 — free_cash_flow
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestFreeCashFlow:
 
     def test_positive_fcf(self):
@@ -54,6 +55,7 @@ class TestFreeCashFlow:
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests 2–3 — cfo_quality_score
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestCfoQualityScore:
 
@@ -91,6 +93,7 @@ class TestCfoQualityScore:
 # Test 4 — capex_intensity
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestCapexIntensity:
 
     def test_asset_light(self):
@@ -116,6 +119,7 @@ class TestCapexIntensity:
 # Test 5 — fcf_conversion_rate
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestFcfConversionRate:
 
     def test_normal(self):
@@ -132,6 +136,7 @@ class TestFcfConversionRate:
 # Tests 6–8 — classify_capital_allocation
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestClassifyCapitalAllocation:
 
     def test_reinvestor(self):
@@ -140,16 +145,27 @@ class TestClassifyCapitalAllocation:
 
     def test_growth_funded_by_debt(self):
         """CFO+, CFI−, CFF+ → expanding via debt."""
-        assert classify_capital_allocation(500.0, -800.0, 400.0) == PATTERN_GROWTH_BY_DEBT
+        assert (
+            classify_capital_allocation(500.0, -800.0, 400.0) == PATTERN_GROWTH_BY_DEBT
+        )
 
     def test_shareholder_returns(self):
         """CFO+, CFI+, CFF− → selling assets, returning capital."""
-        assert classify_capital_allocation(800.0, 200.0, -500.0) == PATTERN_SHAREHOLDER_RETURNS
+        assert (
+            classify_capital_allocation(800.0, 200.0, -500.0)
+            == PATTERN_SHAREHOLDER_RETURNS
+        )
 
     def test_distress_signal(self):
         """CFO−, CFI+, CFF− → burning cash, selling assets to repay debt."""
-        assert classify_capital_allocation(-300.0, 500.0, -200.0) == PATTERN_DISTRESS_SIGNAL
+        assert (
+            classify_capital_allocation(-300.0, 500.0, -200.0)
+            == PATTERN_DISTRESS_SIGNAL
+        )
 
     def test_cash_accumulator(self):
         """CFO+, CFI+, CFF+ → building cash reserves (all inflows)."""
-        assert classify_capital_allocation(1000.0, 500.0, 200.0) == PATTERN_CASH_ACCUMULATOR
+        assert (
+            classify_capital_allocation(1000.0, 500.0, 200.0)
+            == PATTERN_CASH_ACCUMULATOR
+        )

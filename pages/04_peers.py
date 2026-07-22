@@ -86,12 +86,12 @@ else:
         focus_row = scaled_df[scaled_df["company_id"] == focus_ticker]
 
         if not focus_row.empty:
-            focus_vals = [
-                focus_row[m + "_norm"].values[0] for m in metrics_8
-            ] + [focus_row[metrics_8[0] + "_norm"].values[0]]
-            avg_vals = [
-                scaled_df[m + "_norm"].mean() for m in metrics_8
-            ] + [scaled_df[metrics_8[0] + "_norm"].mean()]
+            focus_vals = [focus_row[m + "_norm"].values[0] for m in metrics_8] + [
+                focus_row[metrics_8[0] + "_norm"].values[0]
+            ]
+            avg_vals = [scaled_df[m + "_norm"].mean() for m in metrics_8] + [
+                scaled_df[metrics_8[0] + "_norm"].mean()
+            ]
 
             categories = metric_labels + [metric_labels[0]]
 
@@ -169,4 +169,6 @@ else:
         )
 
         st.dataframe(styled_df, use_container_width=True, hide_index=True)
-        st.caption("💡 Gold highlighted row indicates the Peer Group Benchmark company.")
+        st.caption(
+            "💡 Gold highlighted row indicates the Peer Group Benchmark company."
+        )

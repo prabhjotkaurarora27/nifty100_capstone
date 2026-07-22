@@ -28,27 +28,27 @@ import config
 DEMO_COMPANIES = ["TCS", "HDFCBANK", "RELIANCE", "SUNPHARMA", "TATAMOTORS"]
 
 KPI_FIELDS = [
-    ("net_profit_margin_pct",           "Net Profit Margin (%)"),
-    ("operating_profit_margin_pct",     "Operating Profit Margin (%)"),
-    ("return_on_equity_pct",            "Return on Equity (%)"),
-    ("return_on_capital_employed_pct",  "Return on Capital Employed (%)"),
-    ("return_on_assets_pct",            "Return on Assets (%)"),
-    ("debt_to_equity",                  "Debt / Equity"),
-    ("interest_coverage",               "Interest Coverage Ratio"),
-    ("icr_label",                       "ICR Label"),
-    ("net_debt_cr",                     "Net Debt (Cr)"),
-    ("asset_turnover",                  "Asset Turnover"),
-    ("free_cash_flow_cr",               "Free Cash Flow (Cr)"),
-    ("capex_intensity_label",           "CapEx Intensity"),
-    ("fcf_conversion_rate",             "FCF Conversion Rate"),
-    ("cfo_quality_score",               "CFO Quality Score"),
-    ("capital_allocation_pattern",      "Capital Allocation Pattern"),
-    ("revenue_cagr_3yr",                "Revenue CAGR 3yr (%)"),
-    ("revenue_cagr_5yr",                "Revenue CAGR 5yr (%)"),
-    ("revenue_cagr_5yr_flag",           "Revenue CAGR 5yr Flag"),
-    ("pat_cagr_5yr",                    "PAT CAGR 5yr (%)"),
-    ("eps_cagr_5yr",                    "EPS CAGR 5yr (%)"),
-    ("composite_quality_score",         "Composite Quality Score"),
+    ("net_profit_margin_pct", "Net Profit Margin (%)"),
+    ("operating_profit_margin_pct", "Operating Profit Margin (%)"),
+    ("return_on_equity_pct", "Return on Equity (%)"),
+    ("return_on_capital_employed_pct", "Return on Capital Employed (%)"),
+    ("return_on_assets_pct", "Return on Assets (%)"),
+    ("debt_to_equity", "Debt / Equity"),
+    ("interest_coverage", "Interest Coverage Ratio"),
+    ("icr_label", "ICR Label"),
+    ("net_debt_cr", "Net Debt (Cr)"),
+    ("asset_turnover", "Asset Turnover"),
+    ("free_cash_flow_cr", "Free Cash Flow (Cr)"),
+    ("capex_intensity_label", "CapEx Intensity"),
+    ("fcf_conversion_rate", "FCF Conversion Rate"),
+    ("cfo_quality_score", "CFO Quality Score"),
+    ("capital_allocation_pattern", "Capital Allocation Pattern"),
+    ("revenue_cagr_3yr", "Revenue CAGR 3yr (%)"),
+    ("revenue_cagr_5yr", "Revenue CAGR 5yr (%)"),
+    ("revenue_cagr_5yr_flag", "Revenue CAGR 5yr Flag"),
+    ("pat_cagr_5yr", "PAT CAGR 5yr (%)"),
+    ("eps_cagr_5yr", "EPS CAGR 5yr (%)"),
+    ("composite_quality_score", "Composite Quality Score"),
 ]
 
 
@@ -87,7 +87,9 @@ def run(db_path: Path = config.DB_PATH) -> None:
             ).fetchone()
 
             print(f"\n{'='*60}")
-            print(f"  {co['company_name']}  ({ticker})  —  FY{int(row['year']) if row else 'N/A'}")
+            print(
+                f"  {co['company_name']}  ({ticker})  —  FY{int(row['year']) if row else 'N/A'}"
+            )
             print(f"{'='*60}")
 
             if not row:

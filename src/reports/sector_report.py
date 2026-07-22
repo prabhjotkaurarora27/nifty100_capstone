@@ -6,7 +6,6 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import (
-    HRFlowable,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -126,15 +125,27 @@ def generate_sector_report(sector_name: str, output_pdf_path: Path = None) -> Pa
     summary_data = [
         [
             Paragraph(
-                f"<b>Median ROE</b><br/>{med_roe:.1f}%" if pd.notnull(med_roe) else "N/A",
+                (
+                    f"<b>Median ROE</b><br/>{med_roe:.1f}%"
+                    if pd.notnull(med_roe)
+                    else "N/A"
+                ),
                 cell_style,
             ),
             Paragraph(
-                f"<b>Median ROCE</b><br/>{med_roce:.1f}%" if pd.notnull(med_roce) else "N/A",
+                (
+                    f"<b>Median ROCE</b><br/>{med_roce:.1f}%"
+                    if pd.notnull(med_roce)
+                    else "N/A"
+                ),
                 cell_style,
             ),
             Paragraph(
-                f"<b>Median NPM</b><br/>{med_npm:.1f}%" if pd.notnull(med_npm) else "N/A",
+                (
+                    f"<b>Median NPM</b><br/>{med_npm:.1f}%"
+                    if pd.notnull(med_npm)
+                    else "N/A"
+                ),
                 cell_style,
             ),
         ],
@@ -144,15 +155,19 @@ def generate_sector_report(sector_name: str, output_pdf_path: Path = None) -> Pa
                 cell_style,
             ),
             Paragraph(
-                f"<b>Rev CAGR 5y</b><br/>{med_rev_cagr:.1f}%"
-                if pd.notnull(med_rev_cagr)
-                else "N/A",
+                (
+                    f"<b>Rev CAGR 5y</b><br/>{med_rev_cagr:.1f}%"
+                    if pd.notnull(med_rev_cagr)
+                    else "N/A"
+                ),
                 cell_style,
             ),
             Paragraph(
-                f"<b>PAT CAGR 5y</b><br/>{med_pat_cagr:.1f}%"
-                if pd.notnull(med_pat_cagr)
-                else "N/A",
+                (
+                    f"<b>PAT CAGR 5y</b><br/>{med_pat_cagr:.1f}%"
+                    if pd.notnull(med_pat_cagr)
+                    else "N/A"
+                ),
                 cell_style,
             ),
         ],
@@ -174,7 +189,9 @@ def generate_sector_report(sector_name: str, output_pdf_path: Path = None) -> Pa
     story.append(Spacer(1, 10))
 
     # Sector Company Comparison Matrix Table
-    story.append(Paragraph("<b>📋 Sector Company Comparison Matrix</b>", section_heading))
+    story.append(
+        Paragraph("<b>📋 Sector Company Comparison Matrix</b>", section_heading)
+    )
 
     table_data = [
         [
@@ -196,45 +213,59 @@ def generate_sector_report(sector_name: str, output_pdf_path: Path = None) -> Pa
                 Paragraph(str(row["company_id"]), cell_style),
                 Paragraph(str(row["company_name"])[:20], cell_style),
                 Paragraph(
-                    f"{row['return_on_equity_pct']:.1f}"
-                    if pd.notnull(row["return_on_equity_pct"])
-                    else "N/A",
+                    (
+                        f"{row['return_on_equity_pct']:.1f}"
+                        if pd.notnull(row["return_on_equity_pct"])
+                        else "N/A"
+                    ),
                     cell_style,
                 ),
                 Paragraph(
-                    f"{row['return_on_capital_employed_pct']:.1f}"
-                    if pd.notnull(row["return_on_capital_employed_pct"])
-                    else "N/A",
+                    (
+                        f"{row['return_on_capital_employed_pct']:.1f}"
+                        if pd.notnull(row["return_on_capital_employed_pct"])
+                        else "N/A"
+                    ),
                     cell_style,
                 ),
                 Paragraph(
-                    f"{row['net_profit_margin_pct']:.1f}"
-                    if pd.notnull(row["net_profit_margin_pct"])
-                    else "N/A",
+                    (
+                        f"{row['net_profit_margin_pct']:.1f}"
+                        if pd.notnull(row["net_profit_margin_pct"])
+                        else "N/A"
+                    ),
                     cell_style,
                 ),
                 Paragraph(
-                    f"{row['debt_to_equity']:.2f}"
-                    if pd.notnull(row["debt_to_equity"])
-                    else "N/A",
+                    (
+                        f"{row['debt_to_equity']:.2f}"
+                        if pd.notnull(row["debt_to_equity"])
+                        else "N/A"
+                    ),
                     cell_style,
                 ),
                 Paragraph(
-                    f"{row['free_cash_flow_cr']:,.0f}"
-                    if pd.notnull(row["free_cash_flow_cr"])
-                    else "N/A",
+                    (
+                        f"{row['free_cash_flow_cr']:,.0f}"
+                        if pd.notnull(row["free_cash_flow_cr"])
+                        else "N/A"
+                    ),
                     cell_style,
                 ),
                 Paragraph(
-                    f"{row['revenue_cagr_5yr']:.1f}"
-                    if pd.notnull(row["revenue_cagr_5yr"])
-                    else "N/A",
+                    (
+                        f"{row['revenue_cagr_5yr']:.1f}"
+                        if pd.notnull(row["revenue_cagr_5yr"])
+                        else "N/A"
+                    ),
                     cell_style,
                 ),
                 Paragraph(
-                    f"{row['composite_quality_score']:.1f}"
-                    if pd.notnull(row["composite_quality_score"])
-                    else "N/A",
+                    (
+                        f"{row['composite_quality_score']:.1f}"
+                        if pd.notnull(row["composite_quality_score"])
+                        else "N/A"
+                    ),
                     cell_style,
                 ),
             ]
@@ -251,7 +282,12 @@ def generate_sector_report(sector_name: str, output_pdf_path: Path = None) -> Pa
                 ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F497D")),
                 ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
                 ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#D9D9D9")),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F9F9F9")]),
+                (
+                    "ROWBACKGROUNDS",
+                    (0, 1),
+                    (-1, -1),
+                    [colors.white, colors.HexColor("#F9F9F9")],
+                ),
                 ("TOPPADDING", (0, 0), (-1, -1), 4),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
             ]

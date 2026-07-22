@@ -16,7 +16,6 @@ import sqlite3
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 from loguru import logger
@@ -31,20 +30,23 @@ BASE_DIR: Path = Path(__file__).resolve().parents[2]
 # Import project config (uses python-dotenv)
 # ---------------------------------------------------------------------------
 import sys
+
 sys.path.insert(0, str(BASE_DIR))
 
 try:
     import config as _cfg
-    DB_PATH: Path     = Path(_cfg.DB_PATH)
+
+    DB_PATH: Path = Path(_cfg.DB_PATH)
     DATA_RAW_DIR: Path = Path(_cfg.DATA_RAW_DIR)
-    OUTPUT_DIR: Path  = Path(_cfg.OUTPUT_DIR)
+    OUTPUT_DIR: Path = Path(_cfg.OUTPUT_DIR)
 except Exception:  # fallback if config.py uses dotenv paths relative to cwd
     from dotenv import load_dotenv
     import os
+
     load_dotenv(BASE_DIR / ".env")
-    DB_PATH      = BASE_DIR / os.getenv("DB_PATH",      "db/nifty100.db")
+    DB_PATH = BASE_DIR / os.getenv("DB_PATH", "db/nifty100.db")
     DATA_RAW_DIR = BASE_DIR / os.getenv("DATA_RAW_DIR", "data/raw")
-    OUTPUT_DIR   = BASE_DIR / os.getenv("OUTPUT_DIR",   "output")
+    OUTPUT_DIR = BASE_DIR / os.getenv("OUTPUT_DIR", "output")
 
 # Make DB_PATH, DATA_RAW_DIR, OUTPUT_DIR absolute
 if not DB_PATH.is_absolute():
@@ -60,7 +62,9 @@ AUDIT_FILE: Path = OUTPUT_DIR / "load_audit.csv"
 # Logging setup
 # ---------------------------------------------------------------------------
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-logger.add(OUTPUT_DIR / "pipeline.log", rotation="10 MB", level="DEBUG", encoding="utf-8")
+logger.add(
+    OUTPUT_DIR / "pipeline.log", rotation="10 MB", level="DEBUG", encoding="utf-8"
+)
 
 # ---------------------------------------------------------------------------
 # Source-file catalogue
@@ -72,100 +76,100 @@ logger.add(OUTPUT_DIR / "pipeline.log", rotation="10 MB", level="DEBUG", encodin
 SOURCE_FILES: list[dict] = [
     # ── CORE (7) — header is on row 1 (0-indexed) due to branding row ─────
     {
-        "filename":   "companies.xlsx",
-        "table":      "companies",
-        "type":       "core",
+        "filename": "companies.xlsx",
+        "table": "companies",
+        "type": "core",
         "header_row": 1,
-        "year_cols":   [],
+        "year_cols": [],
         "ticker_cols": ["id", "company_id"],
     },
     {
-        "filename":   "profitandloss.xlsx",
-        "table":      "profitandloss",
-        "type":       "core",
+        "filename": "profitandloss.xlsx",
+        "table": "profitandloss",
+        "type": "core",
         "header_row": 1,
-        "year_cols":   ["year"],
+        "year_cols": ["year"],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "balancesheet.xlsx",
-        "table":      "balancesheet",
-        "type":       "core",
+        "filename": "balancesheet.xlsx",
+        "table": "balancesheet",
+        "type": "core",
         "header_row": 1,
-        "year_cols":   ["year"],
+        "year_cols": ["year"],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "cashflow.xlsx",
-        "table":      "cashflow",
-        "type":       "core",
+        "filename": "cashflow.xlsx",
+        "table": "cashflow",
+        "type": "core",
         "header_row": 1,
-        "year_cols":   ["year"],
+        "year_cols": ["year"],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "analysis.xlsx",
-        "table":      "analysis",
-        "type":       "core",
+        "filename": "analysis.xlsx",
+        "table": "analysis",
+        "type": "core",
         "header_row": 1,
-        "year_cols":   [],
+        "year_cols": [],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "documents.xlsx",
-        "table":      "documents",
-        "type":       "core",
+        "filename": "documents.xlsx",
+        "table": "documents",
+        "type": "core",
         "header_row": 1,
-        "year_cols":   ["year", "Year"],
+        "year_cols": ["year", "Year"],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "prosandcons.xlsx",
-        "table":      "prosandcons",
-        "type":       "core",
+        "filename": "prosandcons.xlsx",
+        "table": "prosandcons",
+        "type": "core",
         "header_row": 1,
-        "year_cols":   [],
+        "year_cols": [],
         "ticker_cols": ["company_id"],
     },
     # ── SUPPLEMENTARY (5) — clean headers, no branding row ────────────────
     {
-        "filename":   "sectors.xlsx",
-        "table":      "sectors",
-        "type":       "supplementary",
+        "filename": "sectors.xlsx",
+        "table": "sectors",
+        "type": "supplementary",
         "header_row": 0,
-        "year_cols":   [],
+        "year_cols": [],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "stock_prices.xlsx",
-        "table":      "stock_prices",
-        "type":       "supplementary",
+        "filename": "stock_prices.xlsx",
+        "table": "stock_prices",
+        "type": "supplementary",
         "header_row": 0,
-        "year_cols":   [],
+        "year_cols": [],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "financial_ratios.xlsx",
-        "table":      "financial_ratios",
-        "type":       "supplementary",
+        "filename": "financial_ratios.xlsx",
+        "table": "financial_ratios",
+        "type": "supplementary",
         "header_row": 0,
-        "year_cols":   ["year"],
+        "year_cols": ["year"],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "peer_groups.xlsx",
-        "table":      "peer_groups",
-        "type":       "supplementary",
+        "filename": "peer_groups.xlsx",
+        "table": "peer_groups",
+        "type": "supplementary",
         "header_row": 0,
-        "year_cols":   [],
+        "year_cols": [],
         "ticker_cols": ["company_id"],
     },
     {
-        "filename":   "market_cap.xlsx",
-        "table":      "financial_ratios",
-        "type":       "supplementary",
+        "filename": "market_cap.xlsx",
+        "table": "financial_ratios",
+        "type": "supplementary",
         "header_row": 0,
-        "year_cols":   ["year"],
+        "year_cols": ["year"],
         "ticker_cols": ["company_id"],
     },
 ]
@@ -180,11 +184,11 @@ from src.etl.normaliser import normalize_year, normalize_ticker  # noqa: E402
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _normalise_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Lowercase, strip, replace spaces with underscore in column names."""
     df.columns = [
-        str(c).strip().lower().replace(" ", "_").replace("-", "_")
-        for c in df.columns
+        str(c).strip().lower().replace(" ", "_").replace("-", "_") for c in df.columns
     ]
     return df
 
@@ -285,8 +289,14 @@ def _write_audit(records: list[dict]) -> None:
     """Write the load audit CSV."""
     AUDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
-        "filename", "table", "type", "status",
-        "rows_loaded", "rows_rejected", "timestamp", "error",
+        "filename",
+        "table",
+        "type",
+        "status",
+        "rows_loaded",
+        "rows_rejected",
+        "timestamp",
+        "error",
     ]
     with AUDIT_FILE.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -299,12 +309,13 @@ def _write_audit(records: list[dict]) -> None:
 # Main entry-point
 # ---------------------------------------------------------------------------
 
+
 def run_pipeline() -> None:
     """Execute the full ETL load pipeline."""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     DATA_RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-    logger.info(f"Starting ETL pipeline")
+    logger.info("Starting ETL pipeline")
     logger.info(f"  DB       : {DB_PATH}")
     logger.info(f"  DATA_RAW : {DATA_RAW_DIR}")
     logger.info(f"  OUTPUT   : {OUTPUT_DIR}")
@@ -314,24 +325,24 @@ def run_pipeline() -> None:
 
     try:
         for entry in tqdm(SOURCE_FILES, desc="Loading tables", unit="file"):
-            filename    = entry["filename"]
-            table       = entry["table"]
-            load_type   = entry["type"]
-            year_cols   = entry["year_cols"]
+            filename = entry["filename"]
+            table = entry["table"]
+            load_type = entry["type"]
+            year_cols = entry["year_cols"]
             ticker_cols = entry["ticker_cols"]
-            header_row  = entry.get("header_row", 0)
-            file_path   = DATA_RAW_DIR / filename
-            ts          = datetime.now().isoformat(timespec="seconds")
+            header_row = entry.get("header_row", 0)
+            file_path = DATA_RAW_DIR / filename
+            ts = datetime.now().isoformat(timespec="seconds")
 
             record = {
                 "filename": filename,
-                "table":    table,
-                "type":     load_type,
-                "status":   "skipped",
-                "rows_loaded":   0,
+                "table": table,
+                "type": load_type,
+                "status": "skipped",
+                "rows_loaded": 0,
                 "rows_rejected": 0,
                 "timestamp": ts,
-                "error":    "",
+                "error": "",
             }
 
             if not file_path.exists():
@@ -347,18 +358,20 @@ def run_pipeline() -> None:
                 df, rows_rejected = apply_normalisations(df, year_cols, ticker_cols)
                 rows_loaded = load_table(df, table, load_type, conn)
 
-                record["status"]        = "success"
-                record["rows_loaded"]   = rows_loaded
+                record["status"] = "success"
+                record["rows_loaded"] = rows_loaded
                 record["rows_rejected"] = rows_rejected
-                record["timestamp"]     = datetime.now().isoformat(timespec="seconds")
+                record["timestamp"] = datetime.now().isoformat(timespec="seconds")
 
-                logger.success(f"  ✅ {filename}: loaded {rows_loaded} rows, rejected {rows_rejected}")
+                logger.success(
+                    f"  ✅ {filename}: loaded {rows_loaded} rows, rejected {rows_rejected}"
+                )
 
             except Exception as exc:  # noqa: BLE001
                 tb = traceback.format_exc()
                 logger.error(f"  ❌ {filename}: {exc}\n{tb}")
                 record["status"] = "error"
-                record["error"]  = str(exc)
+                record["error"] = str(exc)
 
             audit_records.append(record)
 
@@ -371,8 +384,10 @@ def run_pipeline() -> None:
     _write_audit(audit_records)
 
     success_count = sum(1 for r in audit_records if r["status"] == "success")
-    total         = len(audit_records)
-    logger.info(f"Pipeline complete: {success_count}/{total} files loaded successfully.")
+    total = len(audit_records)
+    logger.info(
+        f"Pipeline complete: {success_count}/{total} files loaded successfully."
+    )
 
 
 if __name__ == "__main__":

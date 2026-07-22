@@ -5,7 +5,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import pytest
 from src.reports.portfolio_summary import generate_portfolio_summary_pdf
 from src.reports.sector_report import generate_sector_report
 from src.reports.tearsheet import generate_company_tearsheet

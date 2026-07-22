@@ -26,7 +26,7 @@ import sqlite3
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -64,7 +64,7 @@ logger = _setup_logger()
 # ─────────────────────────────────────────────────────────────────────────────
 # Category constants
 # ─────────────────────────────────────────────────────────────────────────────
-CAT_DATA_SOURCE  = "DATA_SOURCE_ISSUE"
+CAT_DATA_SOURCE = "DATA_SOURCE_ISSUE"
 CAT_VERSION_DIFF = "VERSION_DIFFERENCE"
 CAT_FORMULA_DISC = "FORMULA_DISCREPANCY"
 
@@ -72,13 +72,20 @@ CAT_FORMULA_DISC = "FORMULA_DISCREPANCY"
 FINANCIALS_SECTOR = "Financials"
 
 # Thresholds
-ROCE_DIFF_THRESHOLD = 5.0   # percentage points
-ROE_DIFF_THRESHOLD  = 5.0   # percentage points
-OPM_DIFF_THRESHOLD  = 1.0   # percentage points
+ROCE_DIFF_THRESHOLD = 5.0  # percentage points
+ROE_DIFF_THRESHOLD = 5.0  # percentage points
+OPM_DIFF_THRESHOLD = 1.0  # percentage points
 
 
-def _log_anomaly(category: str, company: str, year: Optional[int],
-                 field: str, computed: object, source: object, note: str) -> None:
+def _log_anomaly(
+    category: str,
+    company: str,
+    year: Optional[int],
+    field: str,
+    computed: object,
+    source: object,
+    note: str,
+) -> None:
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     entry = (
         f"[{category}]  ts={ts}  company={company}  year={year or 'N/A'}  "
@@ -90,6 +97,7 @@ def _log_anomaly(category: str, company: str, year: Optional[int],
 # ─────────────────────────────────────────────────────────────────────────────
 # Check 1 — Suppress D/E high-leverage warning for Financials
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def check_financials_leverage(conn: sqlite3.Connection) -> int:
     """
@@ -112,7 +120,9 @@ def check_financials_leverage(conn: sqlite3.Connection) -> int:
     suppressed = 0
     for company_id, year, de in rows:
         _log_anomaly(
-            CAT_DATA_SOURCE, company_id, year,
+            CAT_DATA_SOURCE,
+            company_id,
+            year,
             "high_leverage_flag",
             f"D/E={de:.2f} flag=1",
             "suppressed",
@@ -134,6 +144,7 @@ def check_financials_leverage(conn: sqlite3.Connection) -> int:
 # ─────────────────────────────────────────────────────────────────────────────
 # Check 2 — OPM mismatch for Financials (data source issue)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def check_opm_financials(conn: sqlite3.Connection) -> int:
     """
@@ -161,7 +172,9 @@ def check_opm_financials(conn: sqlite3.Connection) -> int:
     for company_id, year, op, sales, opm_db, opm_computed in rows:
         companies_seen.add(company_id)
         _log_anomaly(
-            CAT_DATA_SOURCE, company_id, int(year),
+            CAT_DATA_SOURCE,
+            company_id,
+            int(year),
             "opm_percentage",
             f"{opm_computed:.2f}%",
             f"{opm_db} (absolute Cr in source)",
@@ -172,7 +185,8 @@ def check_opm_financials(conn: sqlite3.Connection) -> int:
 
     logger.info(
         "OPM data-source issues logged: %d rows across %d Financials companies",
-        logged, len(companies_seen),
+        logged,
+        len(companies_seen),
     )
     return logged
 
@@ -180,6 +194,7 @@ def check_opm_financials(conn: sqlite3.Connection) -> int:
 # ─────────────────────────────────────────────────────────────────────────────
 # Check 3 — ROCE vs companies.roce_percentage
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def check_roce_vs_source(conn: sqlite3.Connection) -> int:
     """
@@ -232,7 +247,9 @@ def check_roce_vs_source(conn: sqlite3.Connection) -> int:
                 )
 
             _log_anomaly(
-                category, company_id, int(year),
+                category,
+                company_id,
+                int(year),
                 "return_on_capital_employed_pct",
                 f"{computed_roce:.2f}%",
                 f"{source_roce:.2f}%",
@@ -247,6 +264,7 @@ def check_roce_vs_source(conn: sqlite3.Connection) -> int:
 # ─────────────────────────────────────────────────────────────────────────────
 # Check 4 — ROE vs companies.roe_percentage
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def check_roe_vs_source(conn: sqlite3.Connection) -> int:
     """
@@ -298,10 +316,14 @@ def check_roe_vs_source(conn: sqlite3.Connection) -> int:
             )
         else:
             category = CAT_FORMULA_DISC
-            note = "Minor discrepancy — possible rounding or minority-interest treatment."
+            note = (
+                "Minor discrepancy — possible rounding or minority-interest treatment."
+            )
 
         _log_anomaly(
-            category, company_id, int(year),
+            category,
+            company_id,
+            int(year),
             "return_on_equity_pct",
             f"{computed_roe:.2f}%",
             f"{source_roe:.2f}%",
@@ -317,6 +339,7 @@ def check_roe_vs_source(conn: sqlite3.Connection) -> int:
 # Main runner
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def run(db_path: Path = config.DB_PATH, log_path: Path = LOG_PATH) -> None:
     logger.info("=" * 70)
     logger.info("Edge Case Handler — Sprint 2 Day 13")
@@ -327,16 +350,20 @@ def run(db_path: Path = config.DB_PATH, log_path: Path = LOG_PATH) -> None:
     with sqlite3.connect(db_path) as conn:
         conn.row_factory = sqlite3.Row
 
-        fin_flags  = check_financials_leverage(conn)
+        fin_flags = check_financials_leverage(conn)
         opm_issues = check_opm_financials(conn)
-        roce_anom  = check_roce_vs_source(conn)
-        roe_anom   = check_roe_vs_source(conn)
+        roce_anom = check_roce_vs_source(conn)
+        roe_anom = check_roe_vs_source(conn)
 
     total = fin_flags + opm_issues + roce_anom + roe_anom
     logger.info("-" * 70)
     logger.info(
         "Summary — suppressed_leverage=%d  opm_issues=%d  roce_anomalies=%d  roe_anomalies=%d  total=%d",
-        fin_flags, opm_issues, roce_anom, roe_anom, total,
+        fin_flags,
+        opm_issues,
+        roce_anom,
+        roe_anom,
+        total,
     )
     logger.info("Log written → %s", log_path)
 

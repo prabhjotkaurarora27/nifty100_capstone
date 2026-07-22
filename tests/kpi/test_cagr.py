@@ -12,7 +12,6 @@ Tests 1–10 cover:
 
 from __future__ import annotations
 
-import math
 import pytest
 
 from src.analytics.cagr import (
@@ -32,6 +31,7 @@ from src.analytics.cagr import (
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests 1–2 — Normal computation
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestComputeCagrNormal:
 
@@ -63,6 +63,7 @@ class TestComputeCagrNormal:
 # ─────────────────────────────────────────────────────────────────────────────
 # Tests 3–8 — Edge-case flags
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class TestComputeCagrEdgeCases:
 
@@ -107,6 +108,7 @@ class TestComputeCagrEdgeCases:
 # Tests 9–10 — Multi-window CAGR helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class TestMultiWindowCagr:
 
     def test_revenue_cagr_all_windows_present(self):
@@ -114,7 +116,7 @@ class TestMultiWindowCagr:
         Continuous data — all 3 windows (3/5/10) should be NORMAL.
         Series spans 2011–2024 at 1000*1.1^t (10% annual growth).
         """
-        series = {2011 + t: round(1000.0 * (1.1 ** t), 2) for t in range(14)}
+        series = {2011 + t: round(1000.0 * (1.1**t), 2) for t in range(14)}
         result = revenue_cagr(series, windows=(3, 5, 10))
         assert result[3]["flag"] == FLAG_NORMAL
         assert result[5]["flag"] == FLAG_NORMAL
@@ -138,7 +140,14 @@ class TestMultiWindowCagr:
         """
         EPS goes from negative to positive → TURNAROUND flag.
         """
-        series = {2019: -50.0, 2020: -30.0, 2021: -10.0, 2022: 20.0, 2023: 50.0, 2024: 80.0}
+        series = {
+            2019: -50.0,
+            2020: -30.0,
+            2021: -10.0,
+            2022: 20.0,
+            2023: 50.0,
+            2024: 80.0,
+        }
         result = eps_cagr(series, windows=(5,))
         # anchor=2024, start_year=2019 → start=-50, end=80 → TURNAROUND
         assert result[5]["flag"] == FLAG_TURNAROUND

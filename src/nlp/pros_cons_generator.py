@@ -1,6 +1,5 @@
 import sqlite3
 from pathlib import Path
-from typing import Dict, List
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -258,9 +257,7 @@ def generate_pros_cons():
                 )
 
         # CR-04: Net profit negative latest year
-        np_latest = (
-            latest_pl.get("net_profit") if latest_pl is not None else None
-        )
+        np_latest = latest_pl.get("net_profit") if latest_pl is not None else None
         if pd.notnull(np_latest) and np_latest < 0:
             matched_cons.append(
                 {
@@ -302,9 +299,7 @@ def generate_pros_cons():
             )
 
         # CR-07: Dividend payout > 100%
-        div_payout = (
-            latest_pl.get("dividend_payout") if latest_pl is not None else None
-        )
+        div_payout = latest_pl.get("dividend_payout") if latest_pl is not None else None
         if pd.notnull(div_payout) and div_payout > 100:
             matched_cons.append(
                 {
@@ -332,11 +327,7 @@ def generate_pros_cons():
             eps_hist = c_pl["eps"].dropna()
             if len(eps_hist) >= 4:
                 tail4 = eps_hist.tail(4).values
-                if (
-                    tail4[1] < tail4[0]
-                    and tail4[2] < tail4[1]
-                    and tail4[3] < tail4[2]
-                ):
+                if tail4[1] < tail4[0] and tail4[2] < tail4[1] and tail4[3] < tail4[2]:
                     matched_cons.append(
                         {
                             "rule_id": "CR-09",
@@ -418,9 +409,7 @@ def generate_pros_cons():
                         "confidence_pct": 70,
                     }
                 )
-            elif (
-                pd.notnull(rev_cagr) and rev_cagr < 10
-            ):
+            elif pd.notnull(rev_cagr) and rev_cagr < 10:
                 matched_cons.append(
                     {
                         "rule_id": "CR-FB",
@@ -476,12 +465,8 @@ def generate_pros_cons():
     print(
         f"✅ Exported {len(res_df)} rules across {len(unique_companies)} companies to {csv_path.name}"
     )
-    print(
-        f"  - Companies with 1+ Pro: {len(pros_companies)} / {len(companies)}"
-    )
-    print(
-        f"  - Companies with 1+ Con: {len(cons_companies)} / {len(companies)}"
-    )
+    print(f"  - Companies with 1+ Pro: {len(pros_companies)} / {len(companies)}")
+    print(f"  - Companies with 1+ Con: {len(cons_companies)} / {len(companies)}")
 
     return res_df
 

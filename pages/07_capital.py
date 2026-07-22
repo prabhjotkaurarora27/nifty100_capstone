@@ -38,9 +38,7 @@ else:
     df_tree["market_cap_crore"] = df_tree["market_cap_crore"].fillna(1000)
 
     # Plotly Treemap
-    st.subheader(
-        "🗺️ Nifty 100 Companies Grouped by Capital Allocation Patterns"
-    )
+    st.subheader("🗺️ Nifty 100 Companies Grouped by Capital Allocation Patterns")
 
     fig_tree = px.treemap(
         df_tree,
@@ -61,9 +59,7 @@ else:
     st.subheader("🔍 Filter Companies by Capital Allocation Pattern")
     selected_pattern = st.selectbox("Select Archetype Pattern", options=patterns)
 
-    matching_df = df_tree[
-        df_tree["capital_allocation_pattern"] == selected_pattern
-    ][
+    matching_df = df_tree[df_tree["capital_allocation_pattern"] == selected_pattern][
         [
             "company_id",
             "company_name",

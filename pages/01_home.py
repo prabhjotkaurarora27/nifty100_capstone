@@ -38,9 +38,7 @@ else:
 
     # 6 KPI Tiles
     col1, col2, col3, col4, col5, col6 = st.columns(6)
-    col1.metric(
-        "Average ROE", f"{avg_roe:.2f}%" if avg_roe is not None else "N/A"
-    )
+    col1.metric("Average ROE", f"{avg_roe:.2f}%" if avg_roe is not None else "N/A")
     col2.metric("Median P/E", f"{median_pe:.2f}" if median_pe else "N/A")
     col3.metric("Median D/E", f"{median_de:.2f}" if median_de else "N/A")
     col4.metric("Total Companies", total_companies)
@@ -70,20 +68,14 @@ else:
             title=f"Sector Distribution (Nifty 100 — {total_companies} Companies)",
         )
         fig_donut.update_traces(textposition="inside", textinfo="percent+label")
-        fig_donut.update_layout(
-            margin=dict(t=40, b=20, l=20, r=20), height=420
-        )
+        fig_donut.update_layout(margin=dict(t=40, b=20, l=20, r=20), height=420)
         st.plotly_chart(fig_donut, use_container_width=True)
 
     with col_right:
-        st.subheader(
-            f"🏆 Top 5 Companies by Composite Quality Score ({selected_year})"
-        )
+        st.subheader(f"🏆 Top 5 Companies by Composite Quality Score ({selected_year})")
         if "composite_quality_score" in ratios_df.columns:
             top5 = (
-                ratios_df.sort_values(
-                    by="composite_quality_score", ascending=False
-                )
+                ratios_df.sort_values(by="composite_quality_score", ascending=False)
                 .head(5)[
                     [
                         "company_id",

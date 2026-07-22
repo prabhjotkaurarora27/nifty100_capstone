@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import csv
 import sqlite3
-import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -22,24 +21,34 @@ import pandas as pd
 from loguru import logger
 
 import sys
+
 BASE_DIR: Path = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BASE_DIR))
 
-import config as cfg
 from src.etl.loader import (
-    SOURCE_FILES, DATA_RAW_DIR, DB_PATH, OUTPUT_DIR,
-    _normalise_columns, apply_normalisations, load_table,
+    SOURCE_FILES,
+    DATA_RAW_DIR,
+    DB_PATH,
+    OUTPUT_DIR,
+    _normalise_columns,
+    apply_normalisations,
+    load_table,
 )
 
-AUDIT_IN  = OUTPUT_DIR / "load_audit.csv"
+AUDIT_IN = OUTPUT_DIR / "load_audit.csv"
 AUDIT_OUT = OUTPUT_DIR / "fix_audit.csv"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-logger.add(OUTPUT_DIR / "pipeline.log", rotation="10 MB",
-           level="DEBUG", encoding="utf-8", enqueue=True)
+logger.add(
+    OUTPUT_DIR / "pipeline.log",
+    rotation="10 MB",
+    level="DEBUG",
+    encoding="utf-8",
+    enqueue=True,
+)
 
-ALT_SHEETS    = ["Sheet1", "Sheet2", "Sheet 1", "Data", "data", "Report"]
+ALT_SHEETS = ["Sheet1", "Sheet2", "Sheet 1", "Data", "data", "Report"]
 ALT_ENCODINGS = ["utf-8", "latin-1", "cp1252", "utf-8-sig"]
-ALT_SKIPROWS  = [0, 1, 2]
+ALT_SKIPROWS = [0, 1, 2]
 
 _FILE_MAP = {e["filename"]: e for e in SOURCE_FILES}
 
@@ -54,8 +63,9 @@ def _try_read_xlsx(path: Path) -> Optional[pd.DataFrame]:
             pass
         for sheet in ALT_SHEETS:
             try:
-                df = pd.read_excel(path, sheet_name=sheet,
-                                   engine="openpyxl", skiprows=skiprows)
+                df = pd.read_excel(
+                    path, sheet_name=sheet, engine="openpyxl", skiprows=skiprows
+                )
                 if len(df) > 0:
                     logger.debug(f"  sheet='{sheet}' skiprows={skiprows} worked")
                     return df
@@ -68,9 +78,12 @@ def _try_read_csv(path: Path) -> Optional[pd.DataFrame]:
     for enc in ALT_ENCODINGS:
         for skiprows in ALT_SKIPROWS:
             try:
-                df = pd.read_csv(path, encoding=enc,
-                                 skiprows=skiprows if skiprows else None,
-                                 low_memory=False)
+                df = pd.read_csv(
+                    path,
+                    encoding=enc,
+                    skiprows=skiprows if skiprows else None,
+                    low_memory=False,
+                )
                 if len(df) > 0:
                     logger.debug(f"  enc={enc} skiprows={skiprows} worked")
                     return df
@@ -96,10 +109,13 @@ def run_fixes() -> None:
     with AUDIT_IN.open(encoding="utf-8") as f:
         audit_rows = list(csv.DictReader(f))
 
-    problems = [r for r in audit_rows
-                if r.get("status", "").startswith(("error", "skipped"))]
+    problems = [
+        r for r in audit_rows if r.get("status", "").startswith(("error", "skipped"))
+    ]
 
-    print(f"\n  load_audit.csv: {len(audit_rows)} entries, {len(problems)} problem(s)\n")
+    print(
+        f"\n  load_audit.csv: {len(audit_rows)} entries, {len(problems)} problem(s)\n"
+    )
 
     if not problems:
         print("  ✅  No ERROR or SKIPPED entries — nothing to fix.\n")
@@ -114,15 +130,22 @@ def run_fixes() -> None:
     print(sep)
 
     for audit_row in problems:
-        filename  = audit_row["filename"]
-        table     = audit_row["table"]
+        filename = audit_row["filename"]
+        table = audit_row["table"]
         load_type = audit_row["type"]
         file_path = DATA_RAW_DIR / filename
         ts = datetime.now().isoformat(timespec="seconds")
 
-        record = dict(filename=filename, table=table, type=load_type,
-                      status="still_missing", rows_loaded=0,
-                      rows_rejected=0, timestamp=ts, error="")
+        record = dict(
+            filename=filename,
+            table=table,
+            type=load_type,
+            status="still_missing",
+            rows_loaded=0,
+            rows_rejected=0,
+            timestamp=ts,
+            error="",
+        )
 
         if not file_path.exists():
             print(f"  {filename:<35}  MISSING")
@@ -137,15 +160,19 @@ def run_fixes() -> None:
             entry = _FILE_MAP.get(filename, {})
             df = _normalise_columns(df)
             df, rejected = apply_normalisations(
-                df, entry.get("year_cols", []), entry.get("ticker_cols", []))
+                df, entry.get("year_cols", []), entry.get("ticker_cols", [])
+            )
 
             if conn is None:
                 raise RuntimeError("DB not found — run make schema first")
 
             loaded = load_table(df, table, load_type, conn)
-            record.update(status="fixed", rows_loaded=loaded,
-                          rows_rejected=rejected,
-                          timestamp=datetime.now().isoformat(timespec="seconds"))
+            record.update(
+                status="fixed",
+                rows_loaded=loaded,
+                rows_rejected=rejected,
+                timestamp=datetime.now().isoformat(timespec="seconds"),
+            )
             logger.success(f"✅ {filename}: fixed — {loaded} rows")
             print(f"  {filename:<35}  FIXED         {loaded}")
 
@@ -160,8 +187,16 @@ def run_fixes() -> None:
     if conn:
         conn.close()
 
-    fieldnames = ["filename", "table", "type", "status",
-                  "rows_loaded", "rows_rejected", "timestamp", "error"]
+    fieldnames = [
+        "filename",
+        "table",
+        "type",
+        "status",
+        "rows_loaded",
+        "rows_rejected",
+        "timestamp",
+        "error",
+    ]
     with AUDIT_OUT.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()

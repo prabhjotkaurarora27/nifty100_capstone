@@ -28,7 +28,7 @@ import sqlite3
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -66,11 +66,10 @@ logger = logging.getLogger(__name__)
 # Data loading helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _load_company_sector_map(conn: sqlite3.Connection) -> Dict[str, bool]:
     """Return {company_id: is_financial}."""
-    rows = conn.execute(
-        "SELECT company_id, broad_sector FROM sectors"
-    ).fetchall()
+    rows = conn.execute("SELECT company_id, broad_sector FROM sectors").fetchall()
     return {r[0]: (r[1] == "Financials") for r in rows}
 
 
@@ -91,15 +90,15 @@ def _load_pl(conn: sqlite3.Connection) -> Dict[str, Dict[int, Dict]]:
     for r in rows:
         cid, yr = r[0], int(r[1])
         result[cid][yr] = {
-            "sales":             r[2],
-            "operating_profit":  r[3],
-            "opm_percentage":    r[4],
-            "other_income":      r[5],
-            "interest":          r[6],
+            "sales": r[2],
+            "operating_profit": r[3],
+            "opm_percentage": r[4],
+            "other_income": r[5],
+            "interest": r[6],
             "profit_before_tax": r[7],
-            "net_profit":        r[8],
-            "eps":               r[9],
-            "dividend_payout":   r[10],
+            "net_profit": r[8],
+            "eps": r[9],
+            "dividend_payout": r[10],
         }
     return dict(result)
 
@@ -118,10 +117,10 @@ def _load_bs(conn: sqlite3.Connection) -> Dict[str, Dict[int, Dict]]:
         cid, yr = r[0], int(r[1])
         result[cid][yr] = {
             "equity_capital": r[2],
-            "reserves":       r[3],
-            "borrowings":     r[4],
-            "investments":    r[5],
-            "total_assets":   r[6],
+            "reserves": r[3],
+            "borrowings": r[4],
+            "investments": r[5],
+            "total_assets": r[6],
         }
     return dict(result)
 
@@ -139,9 +138,9 @@ def _load_cf(conn: sqlite3.Connection) -> Dict[str, Dict[int, Dict]]:
     for r in rows:
         cid, yr = r[0], int(r[1])
         result[cid][yr] = {
-            "operating_activity":  r[2],
-            "investing_activity":  r[3],
-            "financing_activity":  r[4],
+            "operating_activity": r[2],
+            "investing_activity": r[3],
+            "financing_activity": r[4],
         }
     return dict(result)
 
@@ -154,6 +153,7 @@ def _existing_ratio_keys(conn: sqlite3.Connection) -> set[Tuple[str, int]]:
 # ─────────────────────────────────────────────────────────────────────────────
 # KPI computation for a single (company, year)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _compute_kpis(
     company_id: str,
@@ -172,25 +172,25 @@ def _compute_kpis(
     kpis: Dict[str, Any] = {}
 
     # ── Margin & Return ratios ───────────────────────────────────────────────
-    sales  = pl.get("sales")
-    op     = pl.get("operating_profit")
+    sales = pl.get("sales")
+    op = pl.get("operating_profit")
     opm_db = pl.get("opm_percentage")
-    oi     = pl.get("other_income")
-    intr   = pl.get("interest")
-    pbt    = pl.get("profit_before_tax")
-    np_    = pl.get("net_profit")
-    eps    = pl.get("eps")
-    div    = pl.get("dividend_payout")
+    oi = pl.get("other_income")
+    intr = pl.get("interest")
+    pbt = pl.get("profit_before_tax")
+    np_ = pl.get("net_profit")
+    eps = pl.get("eps")
+    div = pl.get("dividend_payout")
 
     eq_cap = bs.get("equity_capital")
-    res    = bs.get("reserves")
-    borr   = bs.get("borrowings")
-    inv    = bs.get("investments")
-    ta     = bs.get("total_assets")
+    res = bs.get("reserves")
+    borr = bs.get("borrowings")
+    inv = bs.get("investments")
+    ta = bs.get("total_assets")
 
-    cfo    = cf.get("operating_activity")
-    cfi    = cf.get("investing_activity")
-    cff    = cf.get("financing_activity")
+    cfo = cf.get("operating_activity")
+    cfi = cf.get("investing_activity")
+    cff = cf.get("financing_activity")
 
     # EBIT = PBT + Interest (standard form)
     ebit: Optional[float] = None
@@ -216,17 +216,17 @@ def _compute_kpis(
 
     icr_val, icr_label, icr_warn = interest_coverage(op, oi, intr)
     kpis["interest_coverage"] = icr_val
-    kpis["icr_label"]         = icr_label
-    kpis["icr_warning_flag"]  = 1 if icr_warn else 0
+    kpis["icr_label"] = icr_label
+    kpis["icr_warning_flag"] = 1 if icr_warn else 0
 
-    kpis["net_debt_cr"]   = net_debt(borr, inv)
+    kpis["net_debt_cr"] = net_debt(borr, inv)
     kpis["asset_turnover"] = asset_turnover(sales, ta)
 
     # ── Cash-flow KPIs ───────────────────────────────────────────────────────
     fcf_val = free_cash_flow(cfo, cfi)
-    kpis["free_cash_flow_cr"]     = fcf_val
+    kpis["free_cash_flow_cr"] = fcf_val
     kpis["capex_intensity_label"] = capex_intensity(cfi, sales)
-    kpis["fcf_conversion_rate"]   = fcf_conversion_rate(fcf_val, op)
+    kpis["fcf_conversion_rate"] = fcf_conversion_rate(fcf_val, op)
     kpis["capital_allocation_pattern"] = classify_capital_allocation(cfo, cfi, cff)
 
     # CFO quality — rolling 5-year window ending at current year
@@ -235,25 +235,24 @@ def _compute_kpis(
         for yr in range(year - 4, year + 1)
     ]
     pat_window = [
-        pl_series.get(yr, {}).get("net_profit")
-        for yr in range(year - 4, year + 1)
+        pl_series.get(yr, {}).get("net_profit") for yr in range(year - 4, year + 1)
     ]
     kpis["cfo_quality_score"] = cfo_quality_score(cfo_window, pat_window)
 
     # ── CAGR (single-year anchor = current year) ──────────────────────────────
-    rev_series = {yr: d.get("sales")      for yr, d in pl_series.items()}
+    rev_series = {yr: d.get("sales") for yr, d in pl_series.items()}
     pat_series = {yr: d.get("net_profit") for yr, d in pl_series.items()}
-    eps_series = {yr: d.get("eps")        for yr, d in pl_series.items()}
+    eps_series = {yr: d.get("eps") for yr, d in pl_series.items()}
 
     for window, col_suffix in [(3, "3yr"), (5, "5yr"), (10, "10yr")]:
         start_yr = year - window
         for metric, series, prefix in [
             ("revenue", rev_series, "revenue"),
-            ("pat",     pat_series, "pat"),
-            ("eps",     eps_series, "eps"),
+            ("pat", pat_series, "pat"),
+            ("eps", eps_series, "eps"),
         ]:
             start_val = series.get(start_yr)
-            end_val   = series.get(year)
+            end_val = series.get(year)
             val, flag = compute_cagr(start_val, end_val, window)
             kpis[f"{prefix}_cagr_{col_suffix}"] = val
             if col_suffix == "5yr":
@@ -263,11 +262,11 @@ def _compute_kpis(
     # Simple average of z-scored signals; use a weighted heuristic instead:
     # ROE × 0.3 + ROA × 0.2 + ICR (capped at 10) × 0.05 + FCF conv × 0.25 + OPM × 0.2
     try:
-        roe_s   = (kpis.get("return_on_equity_pct") or 0.0) * 0.30
-        roa_s   = (kpis.get("return_on_assets_pct") or 0.0) * 0.20
-        icr_s   = min((kpis.get("interest_coverage") or 0.0), 10.0) * 0.50
-        fcf_s   = (kpis.get("fcf_conversion_rate") or 0.0) * 25.0
-        opm_s   = (kpis.get("operating_profit_margin_pct") or 0.0) * 0.20
+        roe_s = (kpis.get("return_on_equity_pct") or 0.0) * 0.30
+        roa_s = (kpis.get("return_on_assets_pct") or 0.0) * 0.20
+        icr_s = min((kpis.get("interest_coverage") or 0.0), 10.0) * 0.50
+        fcf_s = (kpis.get("fcf_conversion_rate") or 0.0) * 25.0
+        opm_s = (kpis.get("operating_profit_margin_pct") or 0.0) * 0.20
         composite = round(roe_s + roa_s + icr_s + fcf_s + opm_s, 4)
         kpis["composite_quality_score"] = composite
     except Exception:
@@ -314,8 +313,9 @@ _KPI_COLUMNS = [
 ]
 
 
-def _update_existing(conn: sqlite3.Connection, company_id: str, year: int,
-                     kpis: Dict[str, Any]) -> None:
+def _update_existing(
+    conn: sqlite3.Connection, company_id: str, year: int, kpis: Dict[str, Any]
+) -> None:
     set_clause = ", ".join(f"{col} = ?" for col in _KPI_COLUMNS)
     values = [kpis.get(col) for col in _KPI_COLUMNS]
     values.extend([company_id, year])
@@ -326,8 +326,9 @@ def _update_existing(conn: sqlite3.Connection, company_id: str, year: int,
     )
 
 
-def _insert_new(conn: sqlite3.Connection, company_id: str, year: int,
-                kpis: Dict[str, Any]) -> None:
+def _insert_new(
+    conn: sqlite3.Connection, company_id: str, year: int, kpis: Dict[str, Any]
+) -> None:
     cols = ["company_id", "year"] + _KPI_COLUMNS
     placeholders = ", ".join("?" for _ in cols)
     values = [company_id, year] + [kpis.get(col) for col in _KPI_COLUMNS]
@@ -340,6 +341,7 @@ def _insert_new(conn: sqlite3.Connection, company_id: str, year: int,
 # ─────────────────────────────────────────────────────────────────────────────
 # Main engine
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def run(db_path: Path = config.DB_PATH) -> int:
     """
@@ -354,10 +356,10 @@ def run(db_path: Path = config.DB_PATH) -> int:
     with sqlite3.connect(db_path) as conn:
         conn.row_factory = sqlite3.Row
 
-        sector_map   = _load_company_sector_map(conn)
-        pl_all       = _load_pl(conn)
-        bs_all       = _load_bs(conn)
-        cf_all       = _load_cf(conn)
+        sector_map = _load_company_sector_map(conn)
+        pl_all = _load_pl(conn)
+        bs_all = _load_bs(conn)
+        cf_all = _load_cf(conn)
         existing_keys = _existing_ratio_keys(conn)
 
         companies = sorted(set(pl_all) | set(bs_all))
@@ -366,11 +368,11 @@ def run(db_path: Path = config.DB_PATH) -> int:
         updated = inserted = skipped = 0
 
         for company_id in companies:
-            is_fin     = sector_map.get(company_id, False)
-            pl_series  = pl_all.get(company_id, {})
-            bs_series  = bs_all.get(company_id, {})
-            cf_series  = cf_all.get(company_id, {})
-            all_years  = sorted(set(pl_series) | set(bs_series))
+            is_fin = sector_map.get(company_id, False)
+            pl_series = pl_all.get(company_id, {})
+            bs_series = bs_all.get(company_id, {})
+            cf_series = cf_all.get(company_id, {})
+            all_years = sorted(set(pl_series) | set(bs_series))
 
             for year in all_years:
                 pl = pl_series.get(year, {})
@@ -379,8 +381,14 @@ def run(db_path: Path = config.DB_PATH) -> int:
 
                 try:
                     kpis = _compute_kpis(
-                        company_id, year, pl, bs, cf,
-                        is_fin, pl_series, cf_series,
+                        company_id,
+                        year,
+                        pl,
+                        bs,
+                        cf,
+                        is_fin,
+                        pl_series,
+                        cf_series,
                     )
                 except Exception as exc:
                     logger.warning("KPI compute error %s/%d: %s", company_id, year, exc)
@@ -396,13 +404,14 @@ def run(db_path: Path = config.DB_PATH) -> int:
 
         conn.commit()
 
-        total = conn.execute(
-            "SELECT COUNT(*) FROM financial_ratios"
-        ).fetchone()[0]
+        total = conn.execute("SELECT COUNT(*) FROM financial_ratios").fetchone()[0]
 
     logger.info(
         "Ratio Engine complete — updated=%d  inserted=%d  skipped=%d  total=%d",
-        updated, inserted, skipped, total,
+        updated,
+        inserted,
+        skipped,
+        total,
     )
 
     if total < 1100:

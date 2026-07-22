@@ -38,18 +38,14 @@ else:
             pl = get_pl(t)
             if not pl.empty and "sales" in pl.columns:
                 latest_pl = pl.iloc[-1]
-                pl_data.append(
-                    {"company_id": t, "sales": latest_pl.get("sales", 0)}
-                )
+                pl_data.append({"company_id": t, "sales": latest_pl.get("sales", 0)})
 
         pl_df = pd.DataFrame(pl_data)
-        merged_sector = sector_ratios.merge(
-            pl_df, on="company_id", how="left"
-        )
+        merged_sector = sector_ratios.merge(pl_df, on="company_id", how="left")
         merged_sector["sales"] = merged_sector["sales"].fillna(0)
-        merged_sector["market_cap_crore"] = merged_sector[
-            "market_cap_crore"
-        ].fillna(1000)
+        merged_sector["market_cap_crore"] = merged_sector["market_cap_crore"].fillna(
+            1000
+        )
 
         st.subheader(f"🎈 {selected_sector} — Revenue vs ROE vs Market Cap")
 
@@ -70,9 +66,7 @@ else:
             },
         )
         fig_bubble.update_traces(textposition="top center")
-        fig_bubble.update_layout(
-            height=500, margin=dict(t=50, b=40, l=40, r=40)
-        )
+        fig_bubble.update_layout(height=500, margin=dict(t=50, b=40, l=40, r=40))
         st.plotly_chart(fig_bubble, use_container_width=True)
 
         st.markdown("---")
@@ -89,12 +83,8 @@ else:
             "pe_ratio": "Median P/E",
         }
 
-        medians = {
-            name: sector_ratios[col].median() for col, name in kpi_cols.items()
-        }
-        median_df = pd.DataFrame(
-            list(medians.items()), columns=["Metric", "Value"]
-        )
+        medians = {name: sector_ratios[col].median() for col, name in kpi_cols.items()}
+        median_df = pd.DataFrame(list(medians.items()), columns=["Metric", "Value"])
 
         fig_bar = px.bar(
             median_df,

@@ -35,19 +35,21 @@ def _fmt(val, decimals: int = 2) -> str:
 def show_presets(engine: ScreenerEngine) -> None:
     print(f"\n{DIVIDER}")
     print("  NIFTY 100 FINANCIAL SCREENER — Sprint 3 Demo")
-    print(f"  6 Preset Screeners | Composite Quality Score (0–100)")
+    print("  6 Preset Screeners | Composite Quality Score (0–100)")
     print(DIVIDER)
 
     for preset_name in ScreenerEngine.PRESET_NAMES:
         result = engine.run_preset(preset_name)
         n = len(result)
         print(f"\n  ┌── {preset_name} ── {n} companies ──")
-        print(f"  │  {'Ticker':<14} {'Company':<26} {'ROE%':>7} {'D/E':>6} {'Score':>7} {'Sector':<20}")
+        print(
+            f"  │  {'Ticker':<14} {'Company':<26} {'ROE%':>7} {'D/E':>6} {'Score':>7} {'Sector':<20}"
+        )
         print(f"  │  {'-'*64}")
         for _, row in result.head(10).iterrows():
-            roe  = row.get("return_on_equity_pct")
-            de   = row.get("debt_to_equity")
-            sc   = row.get("composite_quality_score")
+            roe = row.get("return_on_equity_pct")
+            de = row.get("debt_to_equity")
+            sc = row.get("composite_quality_score")
             sect = str(row.get("broad_sector", ""))[:20]
             print(
                 f"  │  {str(row['company_id']):<14} "
@@ -59,7 +61,7 @@ def show_presets(engine: ScreenerEngine) -> None:
             )
         if n > 10:
             print(f"  │  ... and {n - 10} more")
-        print(f"  └─ (sorted by Composite Quality Score ↓)")
+        print("  └─ (sorted by Composite Quality Score ↓)")
 
 
 def show_peer_summary(db_path: Path) -> None:
@@ -69,9 +71,12 @@ def show_peer_summary(db_path: Path) -> None:
 
     try:
         with sqlite3.connect(db_path) as conn:
-            groups = [r[0] for r in conn.execute(
-                "SELECT DISTINCT peer_group_name FROM peer_percentiles ORDER BY peer_group_name"
-            ).fetchall()]
+            groups = [
+                r[0]
+                for r in conn.execute(
+                    "SELECT DISTINCT peer_group_name FROM peer_percentiles ORDER BY peer_group_name"
+                ).fetchall()
+            ]
 
             for group in groups:
                 print(f"\n  ┌── {group} ──")
@@ -88,6 +93,7 @@ def show_peer_summary(db_path: Path) -> None:
 
                 # Pivot by metric
                 from collections import defaultdict
+
                 by_metric: dict = defaultdict(list)
                 for cid, metric, val, pr in rows:
                     by_metric[metric].append((cid, val, pr))
@@ -96,11 +102,11 @@ def show_peer_summary(db_path: Path) -> None:
                     line = f"  │  {metric:<20}"
                     for cid, val, pr in entries:
                         val_s = _fmt(val) if val is not None else "—"
-                        pr_s  = _fmt(pr, 2) if pr is not None else "—"
+                        pr_s = _fmt(pr, 2) if pr is not None else "—"
                         marker = "★" if pr == 1.0 else " "
                         line += f"  {marker}{cid}({val_s}→{pr_s})"
                     print(line)
-                print(f"  └─ ★ = highest rank in group")
+                print("  └─ ★ = highest rank in group")
     except Exception as exc:
         print(f"  [peer data unavailable: {exc}]")
 
@@ -140,5 +146,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     import logging
+
     logging.basicConfig(level=logging.WARNING)
     main()

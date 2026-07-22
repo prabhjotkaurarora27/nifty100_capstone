@@ -13,7 +13,6 @@ import sqlite3
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 # ---------------------------------------------------------------------------
 # Import the modules under test
@@ -32,6 +31,7 @@ from src.etl.loader import apply_normalisations, load_table, _normalise_columns
 # ===========================================================================
 #  normalize_year  – 20 tests
 # ===========================================================================
+
 
 class TestNormalizeYear:
 
@@ -141,13 +141,14 @@ class TestNormalizeYear:
 
     # 26
     def test_nan_float(self):
-        import math
+
         assert normalize_year(float("nan")) is None
 
 
 # ===========================================================================
 #  normalize_ticker  – 15 tests
 # ===========================================================================
+
 
 class TestNormalizeTicker:
 
@@ -224,14 +225,17 @@ class TestNormalizeTicker:
 #  apply_normalisations  – integration (uses real normaliser)
 # ===========================================================================
 
+
 class TestApplyNormalisations:
 
     def _make_df(self) -> pd.DataFrame:
-        return pd.DataFrame({
-            "ticker":      ["RELIANCE.NS", "hdfc bank", None, "12345", "TCS.BO"],
-            "fiscal_year": ["FY2021",      "2020-21",   "FY22", "FY2023", None],
-            "revenue":     [100,            200,         300,   400,      500],
-        })
+        return pd.DataFrame(
+            {
+                "ticker": ["RELIANCE.NS", "hdfc bank", None, "12345", "TCS.BO"],
+                "fiscal_year": ["FY2021", "2020-21", "FY22", "FY2023", None],
+                "revenue": [100, 200, 300, 400, 500],
+            }
+        )
 
     # 1 – ticker normalisation applied
     def test_ticker_column_normalised(self):
@@ -249,9 +253,11 @@ class TestApplyNormalisations:
     # 3 – year normalisation applied
     def test_year_column_normalised(self):
         import math
+
         df = self._make_df()
         out, _ = apply_normalisations(df, ["fiscal_year"], [])
         values = out["fiscal_year"].tolist()
+
         # pandas stores mixed int/None columns as float64 (NaN for missing)
         def _norm(v):
             if v is None:
@@ -262,6 +268,7 @@ class TestApplyNormalisations:
                 return int(v)
             except (TypeError, ValueError):
                 return v
+
         assert [_norm(v) for v in values] == [2021, 2021, 2022, 2023, None]
 
     # 4 – non-existent columns are silently skipped
@@ -279,20 +286,23 @@ class TestApplyNormalisations:
 
     # 6 – combined year + ticker
     def test_combined_year_and_ticker(self):
-        df = pd.DataFrame({
-            "ticker": ["RELIANCE.NS"],
-            "year":   ["FY2022"],
-            "value":  [999],
-        })
+        df = pd.DataFrame(
+            {
+                "ticker": ["RELIANCE.NS"],
+                "year": ["FY2022"],
+                "value": [999],
+            }
+        )
         out, rejected = apply_normalisations(df, ["year"], ["ticker"])
         assert out["ticker"].iloc[0] == "RELIANCE"
-        assert out["year"].iloc[0]   == 2022
+        assert out["year"].iloc[0] == 2022
         assert rejected == 0
 
 
 # ===========================================================================
 #  load_table  – in-memory SQLite integration
 # ===========================================================================
+
 
 class TestLoadTable:
 

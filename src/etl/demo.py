@@ -31,19 +31,28 @@ import config as cfg
 
 try:
     from tabulate import tabulate
+
     _HAS_TABULATE = True
 except ImportError:
     _HAS_TABULATE = False
 
-DB_PATH         = cfg.DB_PATH
-OUTPUT_DIR      = cfg.OUTPUT_DIR
-AUDIT_CSV       = OUTPUT_DIR / "load_audit.csv"
-FAILURES_CSV    = OUTPUT_DIR / "validation_failures.csv"
+DB_PATH = cfg.DB_PATH
+OUTPUT_DIR = cfg.OUTPUT_DIR
+AUDIT_CSV = OUTPUT_DIR / "load_audit.csv"
+FAILURES_CSV = OUTPUT_DIR / "validation_failures.csv"
 
 TABLES = [
-    "sectors", "companies", "profitandloss", "balancesheet",
-    "cashflow", "financial_ratios", "analysis",
-    "stock_prices", "documents", "prosandcons", "peer_groups",
+    "sectors",
+    "companies",
+    "profitandloss",
+    "balancesheet",
+    "cashflow",
+    "financial_ratios",
+    "analysis",
+    "stock_prices",
+    "documents",
+    "prosandcons",
+    "peer_groups",
 ]
 
 # Expected counts for exit criteria
@@ -52,13 +61,16 @@ _EXPECTED = {"companies": 92, "stock_prices": 5520}
 
 # ── formatting helpers ─────────────────────────────────────────────────────────
 
+
 def _sep(w: int = 62, ch: str = "=") -> None:
     print(ch * w)
+
 
 def _hdr(text: str) -> None:
     _sep()
     print(f"  {text}")
     _sep(ch="─")
+
 
 def _tbl(rows, headers) -> None:
     if _HAS_TABULATE and rows:
@@ -70,6 +82,7 @@ def _tbl(rows, headers) -> None:
 
 
 # ── steps ──────────────────────────────────────────────────────────────────────
+
 
 def step1_db_stats(conn: sqlite3.Connection) -> dict[str, int]:
     _hdr("Step 1 — Database Table Row Counts")
@@ -118,9 +131,11 @@ def step3_audit_summary() -> dict[str, int]:
     _tbl(rows, ["Status", "Files"])
     total = sum(counts.values())
     ok = counts.get("success", 0)
-    print(f"\n  Total: {total}  |  OK: {ok}  |  "
-          f"Skipped: {counts.get('skipped_missing', 0)}  |  "
-          f"Error: {counts.get('error', 0)}")
+    print(
+        f"\n  Total: {total}  |  OK: {ok}  |  "
+        f"Skipped: {counts.get('skipped_missing', 0)}  |  "
+        f"Error: {counts.get('error', 0)}"
+    )
     print()
     return counts
 
@@ -137,17 +152,25 @@ def step4_dq_summary() -> tuple[int, int, int]:
     with FAILURES_CSV.open(encoding="utf-8") as f:
         for row in csv.DictReader(f):
             rid = row.get("rule_id", "?")
-            by_rule[rid]["sev"]    = row.get("severity", "")
+            by_rule[rid]["sev"] = row.get("severity", "")
             by_rule[rid]["count"] += 1
             total += 1
 
     critical = sum(v["count"] for v in by_rule.values() if v["sev"] == "CRITICAL")
-    warning  = sum(v["count"] for v in by_rule.values() if v["sev"] == "WARNING")
-    info     = sum(v["count"] for v in by_rule.values() if v["sev"] == "INFO")
+    warning = sum(v["count"] for v in by_rule.values() if v["sev"] == "WARNING")
+    info = sum(v["count"] for v in by_rule.values() if v["sev"] == "INFO")
 
     rows = [
-        (rid, v["sev"], v["count"],
-         "❌" if v["sev"] == "CRITICAL" else ("⚠️ " if v["sev"] == "WARNING" else "ℹ️ "))
+        (
+            rid,
+            v["sev"],
+            v["count"],
+            (
+                "❌"
+                if v["sev"] == "CRITICAL"
+                else ("⚠️ " if v["sev"] == "WARNING" else "ℹ️ ")
+            ),
+        )
         for rid, v in sorted(by_rule.items())
     ]
     if rows:
@@ -155,8 +178,10 @@ def step4_dq_summary() -> tuple[int, int, int]:
     else:
         print("  [OK]  No failures recorded")
 
-    print(f"\n  Total: {total}  |  CRITICAL: {critical}  "
-          f"WARNING: {warning}  INFO: {info}")
+    print(
+        f"\n  Total: {total}  |  CRITICAL: {critical}  "
+        f"WARNING: {warning}  INFO: {info}"
+    )
     print()
     return critical, warning, info
 
@@ -165,18 +190,24 @@ def step5_highlights(conn: sqlite3.Connection) -> None:
     _hdr("Step 5 — Highlight Queries")
 
     queries = [
-        ("Top company by sales (latest year)",
-         """SELECT c.company_name, pl.year, ROUND(pl.sales,2) AS sales_cr
+        (
+            "Top company by sales (latest year)",
+            """SELECT c.company_name, pl.year, ROUND(pl.sales,2) AS sales_cr
             FROM profitandloss pl JOIN companies c ON pl.company_id = c.id
             WHERE pl.year = (SELECT MAX(year) FROM profitandloss WHERE company_id = pl.company_id)
-            ORDER BY pl.sales DESC LIMIT 1"""),
-        ("Broad sector with most companies",
-         """SELECT s.broad_sector, COUNT(*) AS n
+            ORDER BY pl.sales DESC LIMIT 1""",
+        ),
+        (
+            "Broad sector with most companies",
+            """SELECT s.broad_sector, COUNT(*) AS n
             FROM sectors s
-            GROUP BY s.broad_sector ORDER BY n DESC LIMIT 1"""),
-        ("Year with most financial data (P&L rows)",
-         """SELECT year, COUNT(*) AS rows FROM profitandloss
-            GROUP BY year ORDER BY rows DESC LIMIT 1"""),
+            GROUP BY s.broad_sector ORDER BY n DESC LIMIT 1""",
+        ),
+        (
+            "Year with most financial data (P&L rows)",
+            """SELECT year, COUNT(*) AS rows FROM profitandloss
+            GROUP BY year ORDER BY rows DESC LIMIT 1""",
+        ),
     ]
 
     for title, sql in queries:
@@ -194,21 +225,26 @@ def step5_highlights(conn: sqlite3.Connection) -> None:
         print()
 
 
-def step6_exit_criteria(counts: dict[str, int],
-                        table_counts: dict[str, int],
-                        fk_ok: bool,
-                        critical: int) -> bool:
+def step6_exit_criteria(
+    counts: dict[str, int], table_counts: dict[str, int], fk_ok: bool, critical: int
+) -> bool:
     _hdr("Step 6 — Sprint 1 Exit Criteria")
 
     criteria = [
-        ("All 12 source files loaded without ERROR",
-         counts.get("error", 0) == 0 and counts.get("success", 0) > 0),
-        ("companies table = 92 rows",
-         table_counts.get("companies", 0) == _EXPECTED["companies"]),
+        (
+            "All 12 source files loaded without ERROR",
+            counts.get("error", 0) == 0 and counts.get("success", 0) > 0,
+        ),
+        (
+            "companies table = 92 rows",
+            table_counts.get("companies", 0) == _EXPECTED["companies"],
+        ),
         ("PRAGMA foreign_key_check = 0 violations", fk_ok),
         ("0 CRITICAL DQ failures", critical == 0),
-        ("101 unit tests passing (run make test separately)",
-         None),   # None = manual check
+        (
+            "101 unit tests passing (run make test separately)",
+            None,
+        ),  # None = manual check
         ("Sprint review report committed", True),
     ]
 
@@ -231,6 +267,7 @@ def step6_exit_criteria(counts: dict[str, int],
 
 # ── entry point ────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     t0 = time.time()
 
@@ -249,18 +286,21 @@ def main() -> None:
 
     try:
         table_counts = step1_db_stats(conn)
-        fk_ok        = step2_fk_check(conn)
+        fk_ok = step2_fk_check(conn)
         audit_counts = step3_audit_summary()
         critical, warning, info = step4_dq_summary()
         step5_highlights(conn)
-        all_pass = step6_exit_criteria(
-            audit_counts, table_counts, fk_ok, critical)
+        all_pass = step6_exit_criteria(audit_counts, table_counts, fk_ok, critical)
     finally:
         conn.close()
 
     elapsed = time.time() - t0
     _sep()
-    verdict = "[PASSED]  Sprint 1 PASSED" if all_pass else "[WARN]  Sprint 1 — some criteria need attention"
+    verdict = (
+        "[PASSED]  Sprint 1 PASSED"
+        if all_pass
+        else "[WARN]  Sprint 1 — some criteria need attention"
+    )
     print(f"  {verdict}")
     print(f"  Runtime: {elapsed:.2f}s")
     _sep()

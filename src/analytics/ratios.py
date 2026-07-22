@@ -23,7 +23,6 @@ Day 09 — Leverage & Liquidity Ratios
 from __future__ import annotations
 
 import logging
-import math
 from typing import Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -33,8 +32,10 @@ logger = logging.getLogger(__name__)
 # Day 08 — Return & Margin Ratios
 # ─────────────────────────────────────────────────────────────────────────────
 
-def net_profit_margin(net_profit: Optional[float],
-                      sales: Optional[float]) -> Optional[float]:
+
+def net_profit_margin(
+    net_profit: Optional[float], sales: Optional[float]
+) -> Optional[float]:
     """
     Net Profit Margin (%).
 
@@ -55,11 +56,13 @@ def net_profit_margin(net_profit: Optional[float],
     return round((net_profit / sales) * 100, 4)
 
 
-def operating_profit_margin(operating_profit: Optional[float],
-                             sales: Optional[float],
-                             opm_percentage: Optional[float] = None,
-                             company_id: str = "",
-                             year: Optional[float] = None) -> Optional[float]:
+def operating_profit_margin(
+    operating_profit: Optional[float],
+    sales: Optional[float],
+    opm_percentage: Optional[float] = None,
+    company_id: str = "",
+    year: Optional[float] = None,
+) -> Optional[float]:
     """
     Operating Profit Margin (%).
 
@@ -91,15 +94,21 @@ def operating_profit_margin(operating_profit: Optional[float],
         if diff > 1.0:
             logger.warning(
                 "OPM mismatch — company=%s year=%s computed=%.2f%% stored=%.2f%% diff=%.2f%%",
-                company_id, year, computed, opm_percentage, diff,
+                company_id,
+                year,
+                computed,
+                opm_percentage,
+                diff,
             )
 
     return computed
 
 
-def return_on_equity(net_profit: Optional[float],
-                     equity_capital: Optional[float],
-                     reserves: Optional[float]) -> Optional[float]:
+def return_on_equity(
+    net_profit: Optional[float],
+    equity_capital: Optional[float],
+    reserves: Optional[float],
+) -> Optional[float]:
     """
     Return on Equity (%).
 
@@ -117,11 +126,13 @@ def return_on_equity(net_profit: Optional[float],
     return round((net_profit / equity) * 100, 4)
 
 
-def return_on_capital_employed(ebit: Optional[float],
-                                equity: Optional[float],
-                                reserves: Optional[float],
-                                borrowings: Optional[float],
-                                is_financial: bool = False) -> Optional[float]:
+def return_on_capital_employed(
+    ebit: Optional[float],
+    equity: Optional[float],
+    reserves: Optional[float],
+    borrowings: Optional[float],
+    is_financial: bool = False,
+) -> Optional[float]:
     """
     Return on Capital Employed (%).
 
@@ -139,15 +150,16 @@ def return_on_capital_employed(ebit: Optional[float],
     if ebit is None:
         return None
     eq = (equity or 0.0) + (reserves or 0.0)
-    borr = (borrowings or 0.0)
+    borr = borrowings or 0.0
     capital_employed = eq if is_financial else eq + borr
     if capital_employed <= 0:
         return None
     return round((ebit / capital_employed) * 100, 4)
 
 
-def return_on_assets(net_profit: Optional[float],
-                     total_assets: Optional[float]) -> Optional[float]:
+def return_on_assets(
+    net_profit: Optional[float], total_assets: Optional[float]
+) -> Optional[float]:
     """
     Return on Assets (%).
 
@@ -166,9 +178,12 @@ def return_on_assets(net_profit: Optional[float],
 # Day 09 — Leverage & Liquidity Ratios
 # ─────────────────────────────────────────────────────────────────────────────
 
-def debt_to_equity(borrowings: Optional[float],
-                   equity_capital: Optional[float],
-                   reserves: Optional[float]) -> Optional[float]:
+
+def debt_to_equity(
+    borrowings: Optional[float],
+    equity_capital: Optional[float],
+    reserves: Optional[float],
+) -> Optional[float]:
     """
     Debt-to-Equity Ratio.
 
@@ -189,8 +204,7 @@ def debt_to_equity(borrowings: Optional[float],
     return round(borr / eq, 4)
 
 
-def high_leverage_flag(de_ratio: Optional[float],
-                       is_financial: bool = False) -> bool:
+def high_leverage_flag(de_ratio: Optional[float], is_financial: bool = False) -> bool:
     """
     Flag True when D/E > 5 AND the company is NOT in the Financials sector.
 
@@ -204,9 +218,11 @@ def high_leverage_flag(de_ratio: Optional[float],
     return de_ratio > 5.0
 
 
-def interest_coverage(operating_profit: Optional[float],
-                      other_income: Optional[float],
-                      interest: Optional[float]) -> Tuple[Optional[float], Optional[str], bool]:
+def interest_coverage(
+    operating_profit: Optional[float],
+    other_income: Optional[float],
+    interest: Optional[float],
+) -> Tuple[Optional[float], Optional[str], bool]:
     """
     Interest Coverage Ratio (ICR).
 
@@ -237,8 +253,9 @@ def interest_coverage(operating_profit: Optional[float],
     return (icr, None, warning)
 
 
-def net_debt(borrowings: Optional[float],
-             investments: Optional[float]) -> Optional[float]:
+def net_debt(
+    borrowings: Optional[float], investments: Optional[float]
+) -> Optional[float]:
     """
     Net Debt (Cr).
 
@@ -253,8 +270,9 @@ def net_debt(borrowings: Optional[float],
     return round(borr - inv, 4)
 
 
-def asset_turnover(sales: Optional[float],
-                   total_assets: Optional[float]) -> Optional[float]:
+def asset_turnover(
+    sales: Optional[float], total_assets: Optional[float]
+) -> Optional[float]:
     """
     Asset Turnover Ratio.
 

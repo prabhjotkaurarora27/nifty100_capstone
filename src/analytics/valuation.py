@@ -25,9 +25,7 @@ def run_valuation_analysis():
         WHERE fr.pe_ratio IS NOT NULL AND fr.pe_ratio > 0
     """
     hist_df = pd.read_sql_query(hist_query, conn)
-    pe_5yr_median = (
-        hist_df.groupby("company_id")["pe_ratio"].median().to_dict()
-    )
+    pe_5yr_median = hist_df.groupby("company_id")["pe_ratio"].median().to_dict()
 
     # Fetch latest year (2024) valuation data
     query = """
@@ -44,9 +42,7 @@ def run_valuation_analysis():
     conn.close()
 
     # 1. Compute FCF Yield (%)
-    df["FCF_yield_pct"] = (
-        df["free_cash_flow_cr"] / df["market_cap_crore"]
-    ) * 100
+    df["FCF_yield_pct"] = (df["free_cash_flow_cr"] / df["market_cap_crore"]) * 100
 
     # 2. Sector Median P/E per broad_sector
     sector_pe_medians = df.groupby("sector")["pe_ratio"].median().to_dict()
@@ -101,9 +97,7 @@ def run_valuation_analysis():
     flags_df = summary_df[summary_df["flag"].isin(["Caution", "Discount"])].copy()
     flags_path = OUTPUT_DIR / "valuation_flags.csv"
     flags_df.to_csv(flags_path, index=False)
-    print(
-        f"✅ Exported {len(flags_df)} flagged companies to {flags_path.name}"
-    )
+    print(f"✅ Exported {len(flags_df)} flagged companies to {flags_path.name}")
 
     # Export output/valuation_summary.xlsx
     excel_path = OUTPUT_DIR / "valuation_summary.xlsx"
@@ -144,9 +138,7 @@ def export_styled_excel(df: pd.DataFrame, file_path: Path):
         start_color="D4EDDA", end_color="D4EDDA", fill_type="solid"
     )
     discount_font = Font(name="Calibri", size=10, color="155724", bold=True)
-    fair_fill = PatternFill(
-        start_color="E2E3E5", end_color="E2E3E5", fill_type="solid"
-    )
+    fair_fill = PatternFill(start_color="E2E3E5", end_color="E2E3E5", fill_type="solid")
     fair_font = Font(name="Calibri", size=10, color="383D41")
 
     # Header Row
@@ -162,9 +154,7 @@ def export_styled_excel(df: pd.DataFrame, file_path: Path):
     for row in df.itertuples(index=False):
         ws.append(list(row))
 
-    for r_idx, row_data in enumerate(
-        df.itertuples(index=False), start=2
-    ):
+    for r_idx, row_data in enumerate(df.itertuples(index=False), start=2):
         for c_idx, val in enumerate(row_data, start=1):
             cell = ws.cell(row=r_idx, column=c_idx)
             cell.font = data_font

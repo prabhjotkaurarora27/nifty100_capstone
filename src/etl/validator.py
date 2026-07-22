@@ -14,9 +14,8 @@ import csv
 import re
 import sqlite3
 import sys
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
 
@@ -32,9 +31,12 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 FAILURES_FILE: Path = OUTPUT_DIR / "validation_failures.csv"
 
 # ── Logging ────────────────────────────────────────────────────────────────────
-logger.add(OUTPUT_DIR / "pipeline.log", rotation="10 MB", level="DEBUG", encoding="utf-8")
+logger.add(
+    OUTPUT_DIR / "pipeline.log", rotation="10 MB", level="DEBUG", encoding="utf-8"
+)
 
 # ── Failure dict helper ────────────────────────────────────────────────────────
+
 
 def _f(
     rule_id: str,
@@ -48,15 +50,15 @@ def _f(
     expected_value: Any = None,
 ) -> dict:
     return {
-        "rule_id":        rule_id,
-        "severity":       severity,
-        "table":          table,
-        "company_id":     company_id,
-        "year":           year,
-        "field":          field,
+        "rule_id": rule_id,
+        "severity": severity,
+        "table": table,
+        "company_id": company_id,
+        "year": year,
+        "field": field,
         "observed_value": observed_value,
         "expected_value": expected_value,
-        "message":        message,
+        "message": message,
     }
 
 
@@ -76,19 +78,29 @@ def _columns(conn: sqlite3.Connection, table: str) -> set[str]:
 # DQ RULES
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 def check_dq01(conn: sqlite3.Connection) -> list[dict]:
-    """DQ-01 CRITICAL – PK uniqueness on companies.company_id"""
+    """DQ-01 CRITICAL – PK uniqueness on companies.id / company_id"""
     failures = []
     if not _table_exists(conn, "companies"):
         return failures
+    pk_col = "id" if "id" in _columns(conn, "companies") else "company_id"
     rows = conn.execute(
-        "SELECT company_id, COUNT(*) c FROM companies GROUP BY company_id HAVING c > 1"
+        f"SELECT {pk_col}, COUNT(*) c FROM companies GROUP BY {pk_col} HAVING c > 1"
     ).fetchall()
     for cid, cnt in rows:
-        failures.append(_f("DQ-01", "CRITICAL", "companies",
-                           f"Duplicate company_id '{cid}' appears {cnt} times",
-                           company_id=cid, field="company_id",
-                           observed_value=cnt, expected_value=1))
+        failures.append(
+            _f(
+                "DQ-01",
+                "CRITICAL",
+                "companies",
+                f"Duplicate company_id '{cid}' appears {cnt} times",
+                company_id=cid,
+                field=pk_col,
+                observed_value=cnt,
+                expected_value=1,
+            )
+        )
     return failures
 
 
@@ -106,10 +118,19 @@ def check_dq02(conn: sqlite3.Connection) -> list[dict]:
             f"GROUP BY company_id, year HAVING c > 1"
         ).fetchall()
         for cid, yr, cnt in rows:
-            failures.append(_f("DQ-02", "CRITICAL", tbl,
-                               f"Duplicate (company_id={cid}, year={yr}) appears {cnt} times",
-                               company_id=cid, year=yr,
-                               field="company_id,year", observed_value=cnt, expected_value=1))
+            failures.append(
+                _f(
+                    "DQ-02",
+                    "CRITICAL",
+                    tbl,
+                    f"Duplicate (company_id={cid}, year={yr}) appears {cnt} times",
+                    company_id=cid,
+                    year=yr,
+                    field="company_id,year",
+                    observed_value=cnt,
+                    expected_value=1,
+                )
+            )
     return failures
 
 
@@ -118,9 +139,17 @@ def check_dq03(conn: sqlite3.Connection) -> list[dict]:
     failures = []
     if not _table_exists(conn, "companies"):
         return failures
-    child_tables = ["profitandloss", "balancesheet", "cashflow",
-                    "analysis", "documents", "prosandcons",
-                    "financial_ratios", "stock_prices"]
+    pk_col = "id" if "id" in _columns(conn, "companies") else "company_id"
+    child_tables = [
+        "profitandloss",
+        "balancesheet",
+        "cashflow",
+        "analysis",
+        "documents",
+        "prosandcons",
+        "financial_ratios",
+        "stock_prices",
+    ]
     for tbl in child_tables:
         if not _table_exists(conn, tbl):
             continue
@@ -128,14 +157,22 @@ def check_dq03(conn: sqlite3.Connection) -> list[dict]:
             continue
         rows = conn.execute(
             f"SELECT DISTINCT t.company_id FROM [{tbl}] t "
-            f"LEFT JOIN companies c ON t.company_id = c.company_id "
-            f"WHERE c.company_id IS NULL AND t.company_id IS NOT NULL"
+            f"LEFT JOIN companies c ON t.company_id = c.{pk_col} "
+            f"WHERE c.{pk_col} IS NULL AND t.company_id IS NOT NULL"
         ).fetchall()
         for (cid,) in rows:
-            failures.append(_f("DQ-03", "CRITICAL", tbl,
-                               f"company_id '{cid}' not found in companies",
-                               company_id=cid, field="company_id",
-                               observed_value=cid, expected_value="exists in companies"))
+            failures.append(
+                _f(
+                    "DQ-03",
+                    "CRITICAL",
+                    tbl,
+                    f"company_id '{cid}' not found in companies",
+                    company_id=cid,
+                    field="company_id",
+                    observed_value=cid,
+                    expected_value="exists in companies",
+                )
+            )
     return failures
 
 
@@ -160,10 +197,19 @@ def check_dq04(conn: sqlite3.Connection) -> list[dict]:
             continue
         diff = abs(assets - rhs) / abs(assets)
         if diff > tol:
-            failures.append(_f("DQ-04", "WARNING", tbl,
-                               f"Balance sheet imbalance: assets={assets}, liab+equity={rhs:.2f}",
-                               company_id=cid, year=yr, field="total_assets",
-                               observed_value=round(diff, 4), expected_value=f"<={tol}"))
+            failures.append(
+                _f(
+                    "DQ-04",
+                    "WARNING",
+                    tbl,
+                    f"Balance sheet imbalance: assets={assets}, liab+equity={rhs:.2f}",
+                    company_id=cid,
+                    year=yr,
+                    field="total_assets",
+                    observed_value=round(diff, 4),
+                    expected_value=f"<={tol}",
+                )
+            )
     return failures
 
 
@@ -183,11 +229,19 @@ def check_dq05(conn: sqlite3.Connection) -> list[dict]:
     for cid, yr, op, rev in rows:
         opm = op / rev
         if not (cfg.DQ_OPM_MIN <= opm <= cfg.DQ_OPM_MAX):
-            failures.append(_f("DQ-05", "WARNING", tbl,
-                               f"OPM {opm:.4f} outside [{cfg.DQ_OPM_MIN}, {cfg.DQ_OPM_MAX}]",
-                               company_id=cid, year=yr, field="operating_profit",
-                               observed_value=round(opm, 4),
-                               expected_value=f"[{cfg.DQ_OPM_MIN},{cfg.DQ_OPM_MAX}]"))
+            failures.append(
+                _f(
+                    "DQ-05",
+                    "WARNING",
+                    tbl,
+                    f"OPM {opm:.4f} outside [{cfg.DQ_OPM_MIN}, {cfg.DQ_OPM_MAX}]",
+                    company_id=cid,
+                    year=yr,
+                    field="operating_profit",
+                    observed_value=round(opm, 4),
+                    expected_value=f"[{cfg.DQ_OPM_MIN},{cfg.DQ_OPM_MAX}]",
+                )
+            )
     return failures
 
 
@@ -204,19 +258,38 @@ def check_dq06(conn: sqlite3.Connection) -> list[dict]:
         f"WHERE revenue IS NOT NULL AND revenue <= 0"
     ).fetchall()
     for cid, yr, rev in rows:
-        failures.append(_f("DQ-06", "WARNING", tbl,
-                           f"revenue={rev} is not positive",
-                           company_id=cid, year=yr, field="revenue",
-                           observed_value=rev, expected_value=">0"))
+        failures.append(
+            _f(
+                "DQ-06",
+                "WARNING",
+                tbl,
+                f"revenue={rev} is not positive",
+                company_id=cid,
+                year=yr,
+                field="revenue",
+                observed_value=rev,
+                expected_value=">0",
+            )
+        )
     return failures
 
 
 def check_dq07(conn: sqlite3.Connection) -> list[dict]:
     """DQ-07 CRITICAL – No null company_id in any table"""
     failures = []
-    tables = ["companies", "profitandloss", "balancesheet", "cashflow",
-              "analysis", "documents", "prosandcons",
-              "financial_ratios", "stock_prices", "sectors", "peer_groups"]
+    tables = [
+        "companies",
+        "profitandloss",
+        "balancesheet",
+        "cashflow",
+        "analysis",
+        "documents",
+        "prosandcons",
+        "financial_ratios",
+        "stock_prices",
+        "sectors",
+        "peer_groups",
+    ]
     for tbl in tables:
         if not _table_exists(conn, tbl):
             continue
@@ -226,9 +299,17 @@ def check_dq07(conn: sqlite3.Connection) -> list[dict]:
             f"SELECT COUNT(*) FROM [{tbl}] WHERE company_id IS NULL"
         ).fetchone()
         if cnt:
-            failures.append(_f("DQ-07", "CRITICAL", tbl,
-                               f"{cnt} rows with NULL company_id",
-                               field="company_id", observed_value=cnt, expected_value=0))
+            failures.append(
+                _f(
+                    "DQ-07",
+                    "CRITICAL",
+                    tbl,
+                    f"{cnt} rows with NULL company_id",
+                    field="company_id",
+                    observed_value=cnt,
+                    expected_value=0,
+                )
+            )
     return failures
 
 
@@ -245,9 +326,17 @@ def check_dq08(conn: sqlite3.Connection) -> list[dict]:
             f"SELECT COUNT(*) FROM [{tbl}] WHERE year IS NULL"
         ).fetchone()
         if cnt:
-            failures.append(_f("DQ-08", "CRITICAL", tbl,
-                               f"{cnt} rows with NULL year",
-                               field="year", observed_value=cnt, expected_value=0))
+            failures.append(
+                _f(
+                    "DQ-08",
+                    "CRITICAL",
+                    tbl,
+                    f"{cnt} rows with NULL year",
+                    field="year",
+                    observed_value=cnt,
+                    expected_value=0,
+                )
+            )
     return failures
 
 
@@ -258,7 +347,12 @@ def check_dq09(conn: sqlite3.Connection) -> list[dict]:
     if not _table_exists(conn, tbl):
         return failures
     cols = _columns(conn, tbl)
-    needed = {"operating_cash_flow", "investing_cash_flow", "financing_cash_flow", "net_cash"}
+    needed = {
+        "operating_cash_flow",
+        "investing_cash_flow",
+        "financing_cash_flow",
+        "net_cash",
+    }
     if not needed.issubset(cols):
         return failures
     rows = conn.execute(
@@ -272,10 +366,19 @@ def check_dq09(conn: sqlite3.Connection) -> list[dict]:
         computed = op + inv + fin
         diff = abs(computed - net) / abs(net)
         if diff > 0.05:
-            failures.append(_f("DQ-09", "WARNING", tbl,
-                               f"Net cash mismatch: computed={computed:.2f}, reported={net:.2f}",
-                               company_id=cid, year=yr, field="net_cash",
-                               observed_value=round(diff, 4), expected_value="<=0.05"))
+            failures.append(
+                _f(
+                    "DQ-09",
+                    "WARNING",
+                    tbl,
+                    f"Net cash mismatch: computed={computed:.2f}, reported={net:.2f}",
+                    company_id=cid,
+                    year=yr,
+                    field="net_cash",
+                    observed_value=round(diff, 4),
+                    expected_value="<=0.05",
+                )
+            )
     return failures
 
 
@@ -296,10 +399,19 @@ def check_dq10(conn: sqlite3.Connection) -> list[dict]:
     for cid, yr, tax, pbt in rows:
         rate = tax / pbt
         if not (0.0 <= rate <= 0.60):
-            failures.append(_f("DQ-10", "WARNING", tbl,
-                               f"Tax rate {rate:.2%} outside [0%, 60%]",
-                               company_id=cid, year=yr, field="tax",
-                               observed_value=round(rate, 4), expected_value="[0.0,0.6]"))
+            failures.append(
+                _f(
+                    "DQ-10",
+                    "WARNING",
+                    tbl,
+                    f"Tax rate {rate:.2%} outside [0%, 60%]",
+                    company_id=cid,
+                    year=yr,
+                    field="tax",
+                    observed_value=round(rate, 4),
+                    expected_value="[0.0,0.6]",
+                )
+            )
     return failures
 
 
@@ -320,10 +432,19 @@ def check_dq11(conn: sqlite3.Connection) -> list[dict]:
     for cid, yr, div, np_ in rows:
         ratio = div / np_
         if ratio > cap:
-            failures.append(_f("DQ-11", "WARNING", tbl,
-                               f"Dividend payout {ratio:.2f} > cap {cap}",
-                               company_id=cid, year=yr, field="dividend",
-                               observed_value=round(ratio, 4), expected_value=f"<={cap}"))
+            failures.append(
+                _f(
+                    "DQ-11",
+                    "WARNING",
+                    tbl,
+                    f"Dividend payout {ratio:.2f} > cap {cap}",
+                    company_id=cid,
+                    year=yr,
+                    field="dividend",
+                    observed_value=round(ratio, 4),
+                    expected_value=f"<={cap}",
+                )
+            )
     return failures
 
 
@@ -344,10 +465,19 @@ def check_dq12(conn: sqlite3.Connection) -> list[dict]:
         ).fetchall()
         for cid, yr, url in rows:
             if url and not pattern.match(str(url)):
-                failures.append(_f("DQ-12", "INFO", tbl,
-                                   f"Invalid URL in column '{col}': {url!r}",
-                                   company_id=cid, year=yr, field=col,
-                                   observed_value=url, expected_value="http(s)://..."))
+                failures.append(
+                    _f(
+                        "DQ-12",
+                        "INFO",
+                        tbl,
+                        f"Invalid URL in column '{col}': {url!r}",
+                        company_id=cid,
+                        year=yr,
+                        field=col,
+                        observed_value=url,
+                        expected_value="http(s)://...",
+                    )
+                )
     return failures
 
 
@@ -357,7 +487,9 @@ def check_dq13(conn: sqlite3.Connection) -> list[dict]:
     if not _table_exists(conn, "companies"):
         return failures
     cols = _columns(conn, "companies")
-    ticker_col = next((c for c in ("ticker", "symbol", "nse_symbol") if c in cols), None)
+    ticker_col = next(
+        (c for c in ("ticker", "symbol", "nse_symbol") if c in cols), None
+    )
     if not ticker_col:
         return failures
     rows = conn.execute(
@@ -366,9 +498,17 @@ def check_dq13(conn: sqlite3.Connection) -> list[dict]:
         f"GROUP BY [{ticker_col}] HAVING c > 1"
     ).fetchall()
     for tick, cnt in rows:
-        failures.append(_f("DQ-13", "CRITICAL", "companies",
-                           f"Duplicate ticker '{tick}' appears {cnt} times",
-                           field=ticker_col, observed_value=cnt, expected_value=1))
+        failures.append(
+            _f(
+                "DQ-13",
+                "CRITICAL",
+                "companies",
+                f"Duplicate ticker '{tick}' appears {cnt} times",
+                field=ticker_col,
+                observed_value=cnt,
+                expected_value=1,
+            )
+        )
     return failures
 
 
@@ -386,10 +526,19 @@ def check_dq14(conn: sqlite3.Connection) -> list[dict]:
         f"WHERE net_profit IS NOT NULL AND eps IS NOT NULL AND net_profit > 0 AND eps <= 0"
     ).fetchall()
     for cid, yr, np_, eps in rows:
-        failures.append(_f("DQ-14", "WARNING", tbl,
-                           f"net_profit={np_} > 0 but eps={eps} <= 0",
-                           company_id=cid, year=yr, field="eps",
-                           observed_value=eps, expected_value=">0"))
+        failures.append(
+            _f(
+                "DQ-14",
+                "WARNING",
+                tbl,
+                f"net_profit={np_} > 0 but eps={eps} <= 0",
+                company_id=cid,
+                year=yr,
+                field="eps",
+                observed_value=eps,
+                expected_value=">0",
+            )
+        )
     return failures
 
 
@@ -408,10 +557,18 @@ def check_dq15(conn: sqlite3.Connection) -> list[dict]:
     ).fetchall()
     for cid, code in rows:
         if not pattern.match(str(code).strip()):
-            failures.append(_f("DQ-15", "WARNING", "companies",
-                               f"BSE code '{code}' is not 6-digit numeric",
-                               company_id=cid, field=bse_col,
-                               observed_value=code, expected_value="6-digit numeric"))
+            failures.append(
+                _f(
+                    "DQ-15",
+                    "WARNING",
+                    "companies",
+                    f"BSE code '{code}' is not 6-digit numeric",
+                    company_id=cid,
+                    field=bse_col,
+                    observed_value=code,
+                    expected_value="6-digit numeric",
+                )
+            )
     return failures
 
 
@@ -427,13 +584,22 @@ def check_dq16(conn: sqlite3.Connection) -> list[dict]:
     min_cov = cfg.DQ_MIN_YEAR_COVERAGE
     rows = conn.execute(
         f"SELECT company_id, COUNT(DISTINCT year) yrs FROM [{tbl}] "
-        f"GROUP BY company_id HAVING yrs < ?"
-    , (min_cov,)).fetchall()
+        f"GROUP BY company_id HAVING yrs < ?",
+        (min_cov,),
+    ).fetchall()
     for cid, yrs in rows:
-        failures.append(_f("DQ-16", "INFO", tbl,
-                           f"company_id '{cid}' has only {yrs} year(s) of P&L data",
-                           company_id=cid, field="year",
-                           observed_value=yrs, expected_value=f">={min_cov}"))
+        failures.append(
+            _f(
+                "DQ-16",
+                "INFO",
+                tbl,
+                f"company_id '{cid}' has only {yrs} year(s) of P&L data",
+                company_id=cid,
+                field="year",
+                observed_value=yrs,
+                expected_value=f">={min_cov}",
+            )
+        )
     return failures
 
 
@@ -442,15 +608,34 @@ def check_dq16(conn: sqlite3.Connection) -> list[dict]:
 # ══════════════════════════════════════════════════════════════════════════════
 
 _ALL_CHECKS = [
-    check_dq01, check_dq02, check_dq03, check_dq04,
-    check_dq05, check_dq06, check_dq07, check_dq08,
-    check_dq09, check_dq10, check_dq11, check_dq12,
-    check_dq13, check_dq14, check_dq15, check_dq16,
+    check_dq01,
+    check_dq02,
+    check_dq03,
+    check_dq04,
+    check_dq05,
+    check_dq06,
+    check_dq07,
+    check_dq08,
+    check_dq09,
+    check_dq10,
+    check_dq11,
+    check_dq12,
+    check_dq13,
+    check_dq14,
+    check_dq15,
+    check_dq16,
 ]
 
 _FIELDNAMES = [
-    "rule_id", "severity", "table", "company_id", "year",
-    "field", "observed_value", "expected_value", "message",
+    "rule_id",
+    "severity",
+    "table",
+    "company_id",
+    "year",
+    "field",
+    "observed_value",
+    "expected_value",
+    "message",
 ]
 
 
@@ -466,8 +651,11 @@ def run_all_checks(conn: sqlite3.Connection) -> list[dict]:
             sev = failures[0]["severity"] if failures else "OK"
 
             if failures:
-                log_fn = logger.error if sev == "CRITICAL" else (
-                    logger.warning if sev == "WARNING" else logger.info)
+                log_fn = (
+                    logger.error
+                    if sev == "CRITICAL"
+                    else (logger.warning if sev == "WARNING" else logger.info)
+                )
                 log_fn(f"{rule_id}: {count} failure(s)")
             else:
                 logger.info(f"{rule_id}: ✅ no failures")
@@ -487,12 +675,15 @@ def write_failures(failures: list[dict]) -> None:
         writer = csv.DictWriter(f, fieldnames=_FIELDNAMES)
         writer.writeheader()
         writer.writerows(failures)
-    logger.info(f"Validation failures written → {FAILURES_FILE}  ({len(failures)} rows)")
+    logger.info(
+        f"Validation failures written → {FAILURES_FILE}  ({len(failures)} rows)"
+    )
 
 
 def print_summary(failures: list[dict]) -> None:
     """Print a summary table of failures grouped by rule."""
     from collections import defaultdict
+
     counts: dict[str, dict] = defaultdict(lambda: {"severity": "", "count": 0})
     for f in failures:
         key = f["rule_id"]
@@ -507,11 +698,21 @@ def print_summary(failures: list[dict]) -> None:
         # extract rule id from docstring
         rid = (fn.__doc__ or "").split()[0] if fn.__doc__ else fn.__name__
         sev_map = {
-            "DQ-01": "CRITICAL", "DQ-02": "CRITICAL", "DQ-03": "CRITICAL",
-            "DQ-04": "WARNING",  "DQ-05": "WARNING",  "DQ-06": "WARNING",
-            "DQ-07": "CRITICAL", "DQ-08": "CRITICAL", "DQ-09": "WARNING",
-            "DQ-10": "WARNING",  "DQ-11": "WARNING",  "DQ-12": "INFO",
-            "DQ-13": "CRITICAL", "DQ-14": "WARNING",  "DQ-15": "WARNING",
+            "DQ-01": "CRITICAL",
+            "DQ-02": "CRITICAL",
+            "DQ-03": "CRITICAL",
+            "DQ-04": "WARNING",
+            "DQ-05": "WARNING",
+            "DQ-06": "WARNING",
+            "DQ-07": "CRITICAL",
+            "DQ-08": "CRITICAL",
+            "DQ-09": "WARNING",
+            "DQ-10": "WARNING",
+            "DQ-11": "WARNING",
+            "DQ-12": "INFO",
+            "DQ-13": "CRITICAL",
+            "DQ-14": "WARNING",
+            "DQ-15": "WARNING",
             "DQ-16": "INFO",
         }
         sev = sev_map.get(rid, "")
@@ -521,10 +722,12 @@ def print_summary(failures: list[dict]) -> None:
 
     total = len(failures)
     critical = sum(1 for f in failures if f["severity"] == "CRITICAL")
-    warning  = sum(1 for f in failures if f["severity"] == "WARNING")
-    info     = sum(1 for f in failures if f["severity"] == "INFO")
+    warning = sum(1 for f in failures if f["severity"] == "WARNING")
+    info = sum(1 for f in failures if f["severity"] == "INFO")
     print("=" * 52)
-    print(f"  Total: {total}  |  CRITICAL: {critical}  WARNING: {warning}  INFO: {info}")
+    print(
+        f"  Total: {total}  |  CRITICAL: {critical}  WARNING: {warning}  INFO: {info}"
+    )
     print("=" * 52 + "\n")
 
 

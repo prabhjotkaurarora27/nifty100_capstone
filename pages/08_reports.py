@@ -33,9 +33,7 @@ col_left, col_right = st.columns([1, 1])
 
 with col_left:
     st.subheader(f"📄 Sprint 5 Executive Tearsheet ({ticker})")
-    tearsheet_path = (
-        PROJECT_ROOT / "reports" / "tearsheets" / f"{ticker}_tearsheet.pdf"
-    )
+    tearsheet_path = PROJECT_ROOT / "reports" / "tearsheets" / f"{ticker}_tearsheet.pdf"
 
     if tearsheet_path.exists():
         with open(tearsheet_path, "rb") as f:
@@ -55,9 +53,7 @@ with col_left:
         st.info("Executive tearsheet PDF not found in repository.")
 
 with col_right:
-    portfolio_pdf = (
-        PROJECT_ROOT / "reports" / "portfolio" / "portfolio_summary.pdf"
-    )
+    portfolio_pdf = PROJECT_ROOT / "reports" / "portfolio" / "portfolio_summary.pdf"
     st.subheader("📚 Nifty 100 Portfolio Summary PDF")
     if portfolio_pdf.exists():
         with open(portfolio_pdf, "rb") as f:

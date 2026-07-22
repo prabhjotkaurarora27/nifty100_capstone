@@ -24,20 +24,28 @@ _EXCEL_EPOCH = datetime(1899, 12, 30)
 
 # Month abbreviation → month number (used for "Mar-21", "Mar 2021" patterns)
 _MONTH_ABBR = {
-    "jan": 1, "feb": 2, "mar": 3, "apr": 4,
-    "may": 5, "jun": 6, "jul": 7, "aug": 8,
-    "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
 }
 
 # Ticker suffixes to strip (order matters: longer first)
-_TICKER_SUFFIXES = re.compile(
-    r"\.(BSE|NSE|NS|BO)$", re.IGNORECASE
-)
+_TICKER_SUFFIXES = re.compile(r"\.(BSE|NSE|NS|BO)$", re.IGNORECASE)
 
 
 # ---------------------------------------------------------------------------
 # normalize_year
 # ---------------------------------------------------------------------------
+
 
 def normalize_year(value) -> Optional[int]:
     """
@@ -65,7 +73,7 @@ def normalize_year(value) -> Optional[int]:
     if isinstance(value, (int, float)):
         # NaN guard
         try:
-            if value != value:          # NaN check (float nan)
+            if value != value:  # NaN check (float nan)
                 return None
         except Exception:
             return None
@@ -156,6 +164,7 @@ def normalize_year(value) -> Optional[int]:
 # normalize_ticker
 # ---------------------------------------------------------------------------
 
+
 def normalize_ticker(value) -> Optional[str]:
     """
     Normalise a stock ticker symbol.
@@ -229,57 +238,57 @@ if __name__ == "__main__":
 
     YEAR_CASES: list[tuple] = [
         # (input, expected_output, description)
-        ("FY2021",   2021, "FY2021 string"),
-        ("FY 2021",  2021, "FY 2021 with space"),
-        ("FY21",     2021, "FY21 two-digit"),
-        ("FY 21",    2021, "FY 21 two-digit with space"),
-        ("fy2021",   2021, "lowercase fy2021"),
-        ("fy 2021",  2021, "lowercase fy 2021"),
-        ("fy21",     2021, "lowercase fy21"),
-        ("2020-21",  2021, "dash range 2020-21"),
-        ("2021-22",  2022, "dash range 2021-22"),
-        ("2020-2021",2021, "full dash range 2020-2021"),
-        ("Mar-21",   2021, "Mar-21"),
-        ("Mar 21",   2021, "Mar 21"),
-        ("mar-21",   2021, "mar-21 lowercase"),
+        ("FY2021", 2021, "FY2021 string"),
+        ("FY 2021", 2021, "FY 2021 with space"),
+        ("FY21", 2021, "FY21 two-digit"),
+        ("FY 21", 2021, "FY 21 two-digit with space"),
+        ("fy2021", 2021, "lowercase fy2021"),
+        ("fy 2021", 2021, "lowercase fy 2021"),
+        ("fy21", 2021, "lowercase fy21"),
+        ("2020-21", 2021, "dash range 2020-21"),
+        ("2021-22", 2022, "dash range 2021-22"),
+        ("2020-2021", 2021, "full dash range 2020-2021"),
+        ("Mar-21", 2021, "Mar-21"),
+        ("Mar 21", 2021, "Mar 21"),
+        ("mar-21", 2021, "mar-21 lowercase"),
         ("Mar 2021", 2021, "Mar 2021"),
-        ("2021",     2021, "plain int string"),
-        (2021,       2021, "plain int"),
-        (2021.0,     2021, "float 2021.0"),
+        ("2021", 2021, "plain int string"),
+        (2021, 2021, "plain int"),
+        (2021.0, 2021, "float 2021.0"),
         ("  2021  ", 2021, "leading/trailing spaces"),
-        (None,       None, "None input"),
-        ("",         None, "empty string"),
-        ("garbage",  None, "garbage string"),
-        ("abc",      None, "short garbage"),
-        (44197,      2021, "Excel serial 44197 → 2021"),
-        ("FY50",     1950, "FY50 → century boundary"),
-        ("FY49",     2049, "FY49 → 20xx century"),
+        (None, None, "None input"),
+        ("", None, "empty string"),
+        ("garbage", None, "garbage string"),
+        ("abc", None, "short garbage"),
+        (44197, 2021, "Excel serial 44197 → 2021"),
+        ("FY50", 1950, "FY50 → century boundary"),
+        ("FY49", 2049, "FY49 → 20xx century"),
     ]
 
     TICKER_CASES: list[tuple] = [
-        ("RELIANCE",       "RELIANCE",     "plain ticker"),
-        ("reliance",       "RELIANCE",     "lowercase ticker"),
-        ("RELIANCE.NS",    "RELIANCE",     ".NS suffix"),
-        ("RELIANCE.BO",    "RELIANCE",     ".BO suffix"),
-        ("RELIANCE.BSE",   "RELIANCE",     ".BSE suffix"),
-        ("RELIANCE.NSE",   "RELIANCE",     ".NSE suffix"),
-        ("HDFC BANK",      "HDFC_BANK",    "space in name"),
-        ("HDFC-BANK",      "HDFC_BANK",    "hyphen in name"),
-        ("hdfc bank.ns",   "HDFC_BANK",    "lowercase + space + .ns"),
-        ("  RELIANCE  ",   "RELIANCE",     "leading/trailing spaces"),
-        (None,             None,           "None input"),
-        ("",               None,           "empty string"),
-        ("   ",            None,           "whitespace only"),
-        (12345,            None,           "numeric int"),
-        ("12345",          None,           "numeric string"),
+        ("RELIANCE", "RELIANCE", "plain ticker"),
+        ("reliance", "RELIANCE", "lowercase ticker"),
+        ("RELIANCE.NS", "RELIANCE", ".NS suffix"),
+        ("RELIANCE.BO", "RELIANCE", ".BO suffix"),
+        ("RELIANCE.BSE", "RELIANCE", ".BSE suffix"),
+        ("RELIANCE.NSE", "RELIANCE", ".NSE suffix"),
+        ("HDFC BANK", "HDFC_BANK", "space in name"),
+        ("HDFC-BANK", "HDFC_BANK", "hyphen in name"),
+        ("hdfc bank.ns", "HDFC_BANK", "lowercase + space + .ns"),
+        ("  RELIANCE  ", "RELIANCE", "leading/trailing spaces"),
+        (None, None, "None input"),
+        ("", None, "empty string"),
+        ("   ", None, "whitespace only"),
+        (12345, None, "numeric int"),
+        ("12345", None, "numeric string"),
     ]
 
     passed = 0
     failed = 0
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("  normalize_year  self-tests")
-    print("="*60)
+    print("=" * 60)
     for inp, expected, desc in YEAR_CASES:
         result = normalize_year(inp)
         ok = result == expected
@@ -288,11 +297,13 @@ if __name__ == "__main__":
             passed += 1
         else:
             failed += 1
-        print(f"  {icon}  {desc:<35}  input={repr(inp):<15}  got={repr(result):<10}  expected={repr(expected)}")
+        print(
+            f"  {icon}  {desc:<35}  input={repr(inp):<15}  got={repr(result):<10}  expected={repr(expected)}"
+        )
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("  normalize_ticker  self-tests")
-    print("="*60)
+    print("=" * 60)
     for inp, expected, desc in TICKER_CASES:
         result = normalize_ticker(inp)
         ok = result == expected
@@ -301,11 +312,16 @@ if __name__ == "__main__":
             passed += 1
         else:
             failed += 1
-        print(f"  {icon}  {desc:<35}  input={repr(inp):<20}  got={repr(result):<15}  expected={repr(expected)}")
+        print(
+            f"  {icon}  {desc:<35}  input={repr(inp):<20}  got={repr(result):<15}  expected={repr(expected)}"
+        )
 
     total = passed + failed
-    print("\n" + "="*60)
-    print(f"  Result: {passed}/{total} passed", "✅ ALL PASS" if failed == 0 else f"❌ {failed} FAILED")
-    print("="*60 + "\n")
+    print("\n" + "=" * 60)
+    print(
+        f"  Result: {passed}/{total} passed",
+        "✅ ALL PASS" if failed == 0 else f"❌ {failed} FAILED",
+    )
+    print("=" * 60 + "\n")
 
     sys.exit(0 if failed == 0 else 1)

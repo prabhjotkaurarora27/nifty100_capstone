@@ -31,9 +31,9 @@ company_lookup = {}
 for _, row in companies_df.iterrows():
     label = f"{row['company_name']} ({row['id']})"
     options.append(label)
-    company_lookup[label] = row['id']
-    company_lookup[row['id']] = row['id']
-    company_lookup[row['company_name']] = row['id']
+    company_lookup[label] = row["id"]
+    company_lookup[row["id"]] = row["id"]
+    company_lookup[row["company_name"]] = row["id"]
 
 selected_option = st.selectbox(
     "Search Company (by Name or Ticker)",
@@ -41,14 +41,12 @@ selected_option = st.selectbox(
     index=0 if options else None,
 )
 
-ticker = (
-    company_lookup.get(selected_option) if selected_option else "RELIANCE"
-)
+ticker = company_lookup.get(selected_option) if selected_option else "RELIANCE"
 
-if not ticker or ticker not in companies_df['id'].values:
+if not ticker or ticker not in companies_df["id"].values:
     st.error("Ticker not found — please try another")
 else:
-    company_info = companies_df[companies_df['id'] == ticker].iloc[0]
+    company_info = companies_df[companies_df["id"] == ticker].iloc[0]
     ratios_df = get_ratios(ticker=ticker)
     pl_df = get_pl(ticker)
     pc_df = get_pros_cons(ticker)
@@ -57,18 +55,13 @@ else:
     st.markdown("---")
     c1, c2 = st.columns([3, 1])
     with c1:
-        st.subheader(
-            f"{company_info['company_name']} ({company_info['id']})"
-        )
+        st.subheader(f"{company_info['company_name']} ({company_info['id']})")
         st.write(
             f"**Sector**: {company_info.get('broad_sector', 'N/A')} | **Sub-Sector**: {company_info.get('sub_sector', 'N/A')}"
         )
         st.write(f"_{company_info.get('about_company', 'No description available.')}_")
     with c2:
-        if (
-            company_info.get("website")
-            and str(company_info.get("website")) != "nan"
-        ):
+        if company_info.get("website") and str(company_info.get("website")) != "nan":
             st.markdown(f"[🌐 Official Website]({company_info['website']})")
 
     st.markdown("---")
@@ -87,16 +80,10 @@ else:
 
         col1.metric("ROE", f"{roe:.2f}%" if pd.notnull(roe) else "N/A")
         col2.metric("ROCE", f"{roce:.2f}%" if pd.notnull(roce) else "N/A")
-        col3.metric(
-            "Net Profit Margin", f"{npm:.2f}%" if pd.notnull(npm) else "N/A"
-        )
+        col3.metric("Net Profit Margin", f"{npm:.2f}%" if pd.notnull(npm) else "N/A")
         col4.metric("D/E", f"{de:.2f}" if pd.notnull(de) else "N/A")
-        col5.metric(
-            "Rev CAGR 5yr", f"{cagr5:.2f}%" if pd.notnull(cagr5) else "N/A"
-        )
-        col6.metric(
-            "FCF (Latest Cr)", f"₹{fcf:,.1f}" if pd.notnull(fcf) else "N/A"
-        )
+        col5.metric("Rev CAGR 5yr", f"{cagr5:.2f}%" if pd.notnull(cagr5) else "N/A")
+        col6.metric("FCF (Latest Cr)", f"₹{fcf:,.1f}" if pd.notnull(fcf) else "N/A")
 
     st.markdown("---")
 

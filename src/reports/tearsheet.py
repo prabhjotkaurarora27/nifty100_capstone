@@ -3,6 +3,7 @@ import sqlite3
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,7 +14,6 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import (
     HRFlowable,
     Image,
-    KeepTogether,
     PageBreak,
     Paragraph,
     SimpleDocTemplate,
@@ -132,9 +132,7 @@ def generate_company_tearsheet(ticker: str, output_pdf_path: Path = None) -> Pat
     # =========================================================================
 
     # Header Bar Table
-    header_p1 = Paragraph(
-        f"<b>{comp_info['company_name']} ({ticker})</b>", title_style
-    )
+    header_p1 = Paragraph(f"<b>{comp_info['company_name']} ({ticker})</b>", title_style)
     header_p2 = Paragraph(
         f"Sector: {comp_info.get('broad_sector', 'N/A')} | Sub-Sector: {comp_info.get('sub_sector', 'N/A')}",
         subtitle_style,
@@ -169,14 +167,52 @@ def generate_company_tearsheet(ticker: str, output_pdf_path: Path = None) -> Pat
 
     kpi_data = [
         [
-            Paragraph(f"<b>ROE</b><br/>{roe:.1f}%" if pd.notnull(roe) else "<b>ROE</b><br/>N/A", bullet_style),
-            Paragraph(f"<b>ROCE</b><br/>{roce:.1f}%" if pd.notnull(roce) else "<b>ROCE</b><br/>N/A", bullet_style),
-            Paragraph(f"<b>NPM</b><br/>{npm:.1f}%" if pd.notnull(npm) else "<b>NPM</b><br/>N/A", bullet_style),
+            Paragraph(
+                (
+                    f"<b>ROE</b><br/>{roe:.1f}%"
+                    if pd.notnull(roe)
+                    else "<b>ROE</b><br/>N/A"
+                ),
+                bullet_style,
+            ),
+            Paragraph(
+                (
+                    f"<b>ROCE</b><br/>{roce:.1f}%"
+                    if pd.notnull(roce)
+                    else "<b>ROCE</b><br/>N/A"
+                ),
+                bullet_style,
+            ),
+            Paragraph(
+                (
+                    f"<b>NPM</b><br/>{npm:.1f}%"
+                    if pd.notnull(npm)
+                    else "<b>NPM</b><br/>N/A"
+                ),
+                bullet_style,
+            ),
         ],
         [
-            Paragraph(f"<b>D/E</b><br/>{de:.2f}" if pd.notnull(de) else "<b>D/E</b><br/>N/A", bullet_style),
-            Paragraph(f"<b>Rev CAGR 5y</b><br/>{rev_cagr:.1f}%" if pd.notnull(rev_cagr) else "<b>Rev CAGR 5y</b><br/>N/A", bullet_style),
-            Paragraph(f"<b>FCF (Cr)</b><br/>₹{fcf:,.0f}" if pd.notnull(fcf) else "<b>FCF (Cr)</b><br/>N/A", bullet_style),
+            Paragraph(
+                f"<b>D/E</b><br/>{de:.2f}" if pd.notnull(de) else "<b>D/E</b><br/>N/A",
+                bullet_style,
+            ),
+            Paragraph(
+                (
+                    f"<b>Rev CAGR 5y</b><br/>{rev_cagr:.1f}%"
+                    if pd.notnull(rev_cagr)
+                    else "<b>Rev CAGR 5y</b><br/>N/A"
+                ),
+                bullet_style,
+            ),
+            Paragraph(
+                (
+                    f"<b>FCF (Cr)</b><br/>₹{fcf:,.0f}"
+                    if pd.notnull(fcf)
+                    else "<b>FCF (Cr)</b><br/>N/A"
+                ),
+                bullet_style,
+            ),
         ],
     ]
 
@@ -199,7 +235,9 @@ def generate_company_tearsheet(ticker: str, output_pdf_path: Path = None) -> Pat
     chart1_img = _create_pl_chart(pl_df)
     chart2_img = _create_return_ratios_chart(ratios_df)
 
-    story.append(Paragraph("<b>10-Year Revenue & Net Profit Trend (₹ Cr)</b>", section_heading))
+    story.append(
+        Paragraph("<b>10-Year Revenue & Net Profit Trend (₹ Cr)</b>", section_heading)
+    )
     story.append(Image(chart1_img, width=540, height=180))
     story.append(Spacer(1, 10))
 
@@ -213,22 +251,44 @@ def generate_company_tearsheet(ticker: str, output_pdf_path: Path = None) -> Pat
     # PAGE 2
     # =========================================================================
 
-    story.append(Paragraph(f"<b>{comp_info['company_name']} — Balance Sheet & Cash Flow Intelligence</b>", section_heading))
-    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#1F497D"), spaceAfter=8))
+    story.append(
+        Paragraph(
+            f"<b>{comp_info['company_name']} — Balance Sheet & Cash Flow Intelligence</b>",
+            section_heading,
+        )
+    )
+    story.append(
+        HRFlowable(
+            width="100%", thickness=1, color=colors.HexColor("#1F497D"), spaceAfter=8
+        )
+    )
 
     chart3_img = _create_bs_chart(bs_df)
     chart4_img = _create_cf_waterfall_chart(cf_df)
 
-    story.append(Paragraph("<b>Balance Sheet Structure (Equity vs Debt vs Liabilities)</b>", section_heading))
+    story.append(
+        Paragraph(
+            "<b>Balance Sheet Structure (Equity vs Debt vs Liabilities)</b>",
+            section_heading,
+        )
+    )
     story.append(Image(chart3_img, width=540, height=160))
     story.append(Spacer(1, 8))
 
-    story.append(Paragraph("<b>Latest Year Cash Flow Breakdown (CFO / CFI / CFF)</b>", section_heading))
+    story.append(
+        Paragraph(
+            "<b>Latest Year Cash Flow Breakdown (CFO / CFI / CFF)</b>", section_heading
+        )
+    )
     story.append(Image(chart4_img, width=540, height=140))
     story.append(Spacer(1, 8))
 
     # Capital Allocation Badge
-    cap_pattern = latest_r.get("capital_allocation_pattern", "Reinvestor") if latest_r is not None else "Reinvestor"
+    cap_pattern = (
+        latest_r.get("capital_allocation_pattern", "Reinvestor")
+        if latest_r is not None
+        else "Reinvestor"
+    )
     story.append(
         Paragraph(
             f"<b>Capital Allocation Archetype:</b> <font color='#1F497D'><b>{cap_pattern}</b></font>",
@@ -240,11 +300,23 @@ def generate_company_tearsheet(ticker: str, output_pdf_path: Path = None) -> Pat
     # Pros & Cons Section
     pros_cons_data = []
 
-    pro_text_formatted = "<br/>".join([f"• <font color='#155724'>{p}</font>" for p in pros_list[:3]]) if pros_list else "• Stable operational profile"
-    con_text_formatted = "<br/>".join([f"• <font color='#721C24'>{c}</font>" for c in cons_list[:3]]) if cons_list else "• Subject to broader market risks"
+    pro_text_formatted = (
+        "<br/>".join([f"• <font color='#155724'>{p}</font>" for p in pros_list[:3]])
+        if pros_list
+        else "• Stable operational profile"
+    )
+    con_text_formatted = (
+        "<br/>".join([f"• <font color='#721C24'>{c}</font>" for c in cons_list[:3]])
+        if cons_list
+        else "• Subject to broader market risks"
+    )
 
-    pros_p = Paragraph(f"<b>✅ Investment Pros / Strengths</b><br/>{pro_text_formatted}", bullet_style)
-    cons_p = Paragraph(f"<b>❌ Risk Factors & Weaknesses</b><br/>{con_text_formatted}", bullet_style)
+    pros_p = Paragraph(
+        f"<b>✅ Investment Pros / Strengths</b><br/>{pro_text_formatted}", bullet_style
+    )
+    cons_p = Paragraph(
+        f"<b>❌ Risk Factors & Weaknesses</b><br/>{con_text_formatted}", bullet_style
+    )
 
     pc_table = Table([[pros_p, cons_p]], colWidths=[265, 265])
     pc_table.setStyle(
@@ -270,12 +342,27 @@ def generate_company_tearsheet(ticker: str, output_pdf_path: Path = None) -> Pat
 
 # Helper chart generation functions (returns BytesIO image buffer)
 
+
 def _create_pl_chart(pl_df: pd.DataFrame) -> io.BytesIO:
     fig, ax = plt.subplots(figsize=(7.5, 2.5), dpi=150)
     if not pl_df.empty and "sales" in pl_df.columns:
         years = pl_df["year"].astype(str)
-        ax.bar(years, pl_df["sales"], width=0.4, label="Revenue (Sales)", color="#1F497D", align="center")
-        ax.bar(years, pl_df["net_profit"], width=0.4, label="Net Profit", color="#2E7D32", align="edge")
+        ax.bar(
+            years,
+            pl_df["sales"],
+            width=0.4,
+            label="Revenue (Sales)",
+            color="#1F497D",
+            align="center",
+        )
+        ax.bar(
+            years,
+            pl_df["net_profit"],
+            width=0.4,
+            label="Net Profit",
+            color="#2E7D32",
+            align="edge",
+        )
         ax.legend(loc="upper left", fontsize=7)
         ax.set_ylabel("Amount (₹ Cr)", fontsize=8)
         ax.tick_params(axis="both", labelsize=7)
@@ -295,9 +382,23 @@ def _create_return_ratios_chart(ratios_df: pd.DataFrame) -> io.BytesIO:
     if not ratios_df.empty:
         years = ratios_df["year"].astype(str)
         if "return_on_equity_pct" in ratios_df.columns:
-            ax.plot(years, ratios_df["return_on_equity_pct"], marker="o", color="#E65100", label="ROE (%)", linewidth=2)
+            ax.plot(
+                years,
+                ratios_df["return_on_equity_pct"],
+                marker="o",
+                color="#E65100",
+                label="ROE (%)",
+                linewidth=2,
+            )
         if "return_on_capital_employed_pct" in ratios_df.columns:
-            ax.plot(years, ratios_df["return_on_capital_employed_pct"], marker="s", color="#0288D1", label="ROCE (%)", linewidth=2)
+            ax.plot(
+                years,
+                ratios_df["return_on_capital_employed_pct"],
+                marker="s",
+                color="#0288D1",
+                label="ROCE (%)",
+                linewidth=2,
+            )
         ax.legend(loc="upper left", fontsize=7)
         ax.set_ylabel("Percentage (%)", fontsize=8)
         ax.tick_params(axis="both", labelsize=7)
@@ -322,7 +423,13 @@ def _create_bs_chart(bs_df: pd.DataFrame) -> io.BytesIO:
 
         ax.bar(years, eq, label="Equity & Reserves", color="#2E7D32")
         ax.bar(years, borrowings, bottom=eq, label="Borrowings", color="#C62828")
-        ax.bar(years, other_liab, bottom=eq + borrowings, label="Other Liabilities", color="#757575")
+        ax.bar(
+            years,
+            other_liab,
+            bottom=eq + borrowings,
+            label="Other Liabilities",
+            color="#757575",
+        )
         ax.legend(loc="upper left", fontsize=7)
         ax.set_ylabel("Amount (₹ Cr)", fontsize=8)
         ax.tick_params(axis="both", labelsize=7)
@@ -370,4 +477,6 @@ if __name__ == "__main__":
     test_tickers = ["TCS", "HDFCBANK", "RELIANCE", "SUNPHARMA", "TATASTEEL"]
     for t in test_tickers:
         pdf_path = generate_company_tearsheet(t)
-        print(f"✅ Generated tearsheet: {pdf_path.name} ({pdf_path.stat().st_size / 1024:.1f} KB)")
+        print(
+            f"✅ Generated tearsheet: {pdf_path.name} ({pdf_path.stat().st_size / 1024:.1f} KB)"
+        )

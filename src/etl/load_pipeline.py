@@ -22,26 +22,32 @@ BASE_DIR: Path = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(BASE_DIR))
 
 import config as cfg
-from db.init_db import init_db, verify_db
+from db.init_db import init_db
 from src.etl.loader import SOURCE_FILES, DATA_RAW_DIR, run_pipeline
 
 # ── logging ───────────────────────────────────────────────────────────────────
 cfg.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-logger.add(cfg.OUTPUT_DIR / "pipeline.log", rotation="10 MB",
-           level="DEBUG", encoding="utf-8", enqueue=True)
+logger.add(
+    cfg.OUTPUT_DIR / "pipeline.log",
+    rotation="10 MB",
+    level="DEBUG",
+    encoding="utf-8",
+    enqueue=True,
+)
 
 # ── verification spec ─────────────────────────────────────────────────────────
 # (table, expected_rows, exact_match)  exact=True → ==, False → within ±10%
 CHECKS: list[tuple[str, int, bool]] = [
-    ("companies",     92,   True),
+    ("companies", 92, True),
     ("profitandloss", 1276, False),
-    ("balancesheet",  1312, False),
-    ("cashflow",      1187, False),
-    ("stock_prices",  5520, True),
+    ("balancesheet", 1312, False),
+    ("cashflow", 1187, False),
+    ("stock_prices", 5520, True),
 ]
 
 
 # ── helpers ────────────────────────────────────────────────────────────────────
+
 
 def _print_separator(width: int = 62) -> None:
     print("=" * width)
@@ -65,7 +71,9 @@ def _run_row_count_checks(conn: sqlite3.Connection) -> bool:
     """
     col_w = 18
     _print_separator()
-    print(f"  {'Table':<{col_w}}  {'Expected':>9}  {'Got':>9}  {'Tolerance':<12}  Result")
+    print(
+        f"  {'Table':<{col_w}}  {'Expected':>9}  {'Got':>9}  {'Tolerance':<12}  Result"
+    )
     _print_separator()
 
     all_pass = True
@@ -76,12 +84,12 @@ def _run_row_count_checks(conn: sqlite3.Connection) -> bool:
             got = 0
 
         if exact:
-            ok = (got == expected)
+            ok = got == expected
             tol_str = "exact"
         else:
             lo = int(expected * 0.90)
             hi = int(expected * 1.10)
-            ok = (lo <= got <= hi)
+            ok = lo <= got <= hi
             tol_str = "±10%"
 
         flag = "✅ PASS" if ok else "❌ FAIL"
@@ -109,6 +117,7 @@ def _run_fk_check(conn: sqlite3.Connection) -> bool:
 
 # ── main ──────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     print()
     _print_separator()
@@ -119,8 +128,10 @@ def main() -> None:
     print("\n📂  Scanning data/raw/ …")
     missing = _scan_missing_files()
     present = len(SOURCE_FILES) - len(missing)
-    print(f"    {present}/{len(SOURCE_FILES)} source files found"
-          + (f"  ⚠️  {len(missing)} missing" if missing else "  ✅"))
+    print(
+        f"    {present}/{len(SOURCE_FILES)} source files found"
+        + (f"  ⚠️  {len(missing)} missing" if missing else "  ✅")
+    )
     for m in missing:
         print(f"    ⚠️   SKIPPED: {m}")
 

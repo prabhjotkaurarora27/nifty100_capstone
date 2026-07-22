@@ -15,9 +15,8 @@ import logging
 import sqlite3
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
-import numpy as np
 import pandas as pd
 import yaml
 
@@ -30,22 +29,22 @@ CONFIG_PATH = Path(__file__).resolve().parents[2] / "config" / "screener_config.
 
 # ── Column mapping: filter key → financial_ratios column ─────────────────────
 FILTER_COL_MAP: Dict[str, str] = {
-    "roe_min":               "return_on_equity_pct",
-    "opm_min":               "operating_profit_margin_pct",
-    "net_profit_min":        "net_profit",
-    "debt_to_equity_max":    "debt_to_equity",
+    "roe_min": "return_on_equity_pct",
+    "opm_min": "operating_profit_margin_pct",
+    "net_profit_min": "net_profit",
+    "debt_to_equity_max": "debt_to_equity",
     "interest_coverage_min": "interest_coverage",
-    "fcf_min":               "free_cash_flow_cr",
-    "revenue_cagr_5yr_min":  "revenue_cagr_5yr",
-    "pat_cagr_5yr_min":      "pat_cagr_5yr",
-    "eps_cagr_min":          "eps_cagr_5yr",
-    "revenue_cagr_3yr_min":  "revenue_cagr_3yr",
-    "pe_max":                "pe_ratio",
-    "pb_max":                "pb_ratio",
-    "dividend_yield_min":    "dividend_yield_pct",
-    "market_cap_min":        "market_cap_crore",
-    "sales_min":             "sales",
-    "asset_turnover_min":    "asset_turnover",
+    "fcf_min": "free_cash_flow_cr",
+    "revenue_cagr_5yr_min": "revenue_cagr_5yr",
+    "pat_cagr_5yr_min": "pat_cagr_5yr",
+    "eps_cagr_min": "eps_cagr_5yr",
+    "revenue_cagr_3yr_min": "revenue_cagr_3yr",
+    "pe_max": "pe_ratio",
+    "pb_max": "pb_ratio",
+    "dividend_yield_min": "dividend_yield_pct",
+    "market_cap_min": "market_cap_crore",
+    "sales_min": "sales",
+    "asset_turnover_min": "asset_turnover",
 }
 
 # Metrics where filter applies "max" (fail if value EXCEEDS threshold)
@@ -55,6 +54,7 @@ MAX_FILTERS = {"debt_to_equity_max", "pe_max", "pb_max"}
 # ─────────────────────────────────────────────────────────────────────────────
 # Data loading
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _load_latest_ratios(db_path: Path) -> pd.DataFrame:
     """
@@ -132,6 +132,7 @@ def _load_prior_year_de(db_path: Path) -> Dict[str, Optional[float]]:
 # Composite quality score — P10/P90 winsorised, 0–100
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _winsorise_scale(series: pd.Series) -> pd.Series:
     """Winsorise at P10/P90 then scale to 0–100."""
     p10, p90 = series.quantile(0.10), series.quantile(0.90)
@@ -152,45 +153,63 @@ def _compute_composite_score(df: pd.DataFrame) -> pd.Series:
     Each metric is individually winsorised (P10/P90) and scaled 0–100
     before weighting.
     """
+
     def ws(col: str) -> pd.Series:
-        s = pd.to_numeric(df[col], errors="coerce").fillna(df[col].median()
-                         if pd.to_numeric(df[col], errors="coerce").notna().any()
-                         else 0)
+        s = pd.to_numeric(df[col], errors="coerce").fillna(
+            df[col].median()
+            if pd.to_numeric(df[col], errors="coerce").notna().any()
+            else 0
+        )
         return _winsorise_scale(s)
 
     # Profitability (35%)
-    roe_s  = ws("return_on_equity_pct")          * 0.15
+    roe_s = ws("return_on_equity_pct") * 0.15
     roce_s = ws("return_on_capital_employed_pct") * 0.10
-    npm_s  = ws("net_profit_margin_pct")          * 0.10
+    npm_s = ws("net_profit_margin_pct") * 0.10
 
     # Cash Quality (30%)
     # FCF CAGR proxy: use pat_cagr_5yr as surrogate when fcf_cagr not stored
-    fcf_cagr_s = ws("pat_cagr_5yr")              * 0.15
+    fcf_cagr_s = ws("pat_cagr_5yr") * 0.15
     # CFO/PAT: cfo_quality_score is categorical → map to numeric
-    cfo_map = {"High Quality": 100, "Moderate": 50, "Accrual Risk": 10,
-               "Insufficient Data": 0}
+    cfo_map = {
+        "High Quality": 100,
+        "Moderate": 50,
+        "Accrual Risk": 10,
+        "Insufficient Data": 0,
+    }
     cfo_num = df["cfo_quality_score"].map(cfo_map).fillna(0)
-    cfo_s   = _winsorise_scale(cfo_num)           * 0.10
+    cfo_s = _winsorise_scale(cfo_num) * 0.10
     # FCF positive flag (5%)
-    fcf_flag = (pd.to_numeric(df["free_cash_flow_cr"], errors="coerce") > 0
-                ).astype(float) * 100
-    fcf_flag_s = fcf_flag                         * 0.05
+    fcf_flag = (pd.to_numeric(df["free_cash_flow_cr"], errors="coerce") > 0).astype(
+        float
+    ) * 100
+    fcf_flag_s = fcf_flag * 0.05
 
     # Growth (20%)
-    rev_s  = ws("revenue_cagr_5yr")               * 0.10
-    pat_s  = ws("pat_cagr_5yr")                   * 0.10
+    rev_s = ws("revenue_cagr_5yr") * 0.10
+    pat_s = ws("pat_cagr_5yr") * 0.10
 
     # Leverage (15%) — D/E inverted so lower D/E = higher score
     de_raw = pd.to_numeric(df["debt_to_equity"], errors="coerce").fillna(0)
-    de_inv = _winsorise_scale(-de_raw)             * 0.10   # invert
+    de_inv = _winsorise_scale(-de_raw) * 0.10  # invert
     icr_raw = pd.to_numeric(df["interest_coverage"], errors="coerce").fillna(0)
     # "Debt Free" icr_label → treat ICR as 999
     debt_free_mask = df["icr_label"] == "Debt Free"
     icr_raw = icr_raw.where(~debt_free_mask, 999.0)
-    icr_s   = _winsorise_scale(icr_raw)            * 0.05
+    icr_s = _winsorise_scale(icr_raw) * 0.05
 
-    score = roe_s + roce_s + npm_s + fcf_cagr_s + cfo_s + fcf_flag_s \
-            + rev_s + pat_s + de_inv + icr_s
+    score = (
+        roe_s
+        + roce_s
+        + npm_s
+        + fcf_cagr_s
+        + cfo_s
+        + fcf_flag_s
+        + rev_s
+        + pat_s
+        + de_inv
+        + icr_s
+    )
 
     return score.round(2)
 
@@ -213,6 +232,7 @@ def _compute_sector_relative_score(df: pd.DataFrame) -> pd.Series:
 # ─────────────────────────────────────────────────────────────────────────────
 # ScreenerEngine
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class ScreenerEngine:
     """
@@ -266,7 +286,7 @@ class ScreenerEngine:
 
         # Composite quality score
         df["composite_quality_score"] = _compute_composite_score(df)
-        df["sector_relative_score"]   = _compute_sector_relative_score(df)
+        df["sector_relative_score"] = _compute_sector_relative_score(df)
 
         self._df = df
         return df
@@ -308,17 +328,17 @@ class ScreenerEngine:
 
             if key == "debt_to_equity_max":
                 # Financials sector: pass unconditionally
-                fin_mask  = df["broad_sector"] == fin_label
-                non_fin   = df[~fin_mask]
-                de_col    = pd.to_numeric(non_fin[col], errors="coerce")
+                fin_mask = df["broad_sector"] == fin_label
+                non_fin = df[~fin_mask]
+                de_col = pd.to_numeric(non_fin[col], errors="coerce")
                 pass_mask = de_col <= threshold
-                keep_ids  = set(non_fin.loc[pass_mask].index) | set(df[fin_mask].index)
+                keep_ids = set(non_fin.loc[pass_mask].index) | set(df[fin_mask].index)
                 df = df.loc[sorted(keep_ids)]
 
             elif key == "interest_coverage_min":
                 # "Debt Free" always passes
                 debt_free = df["icr_label"] == "Debt Free"
-                icr_val   = pd.to_numeric(df[col], errors="coerce")
+                icr_val = pd.to_numeric(df[col], errors="coerce")
                 pass_mask = debt_free | (icr_val >= threshold)
                 df = df[pass_mask]
 
@@ -330,7 +350,7 @@ class ScreenerEngine:
                     df = df[numeric_col.notna() & (numeric_col >= threshold)]
 
         sort_col = self._cfg.get("sort_by", "composite_quality_score")
-        asc      = bool(self._cfg.get("sort_ascending", False))
+        asc = bool(self._cfg.get("sort_ascending", False))
         if sort_col in df.columns:
             df = df.sort_values(sort_col, ascending=asc)
 
@@ -340,36 +360,44 @@ class ScreenerEngine:
 
     def preset_quality_compounder(self) -> pd.DataFrame:
         """ROE > 15%, D/E < 1.0, FCF > 0, Revenue CAGR 5yr > 10%."""
-        return self.apply_filters({
-            "roe_min":              15.0,
-            "debt_to_equity_max":   1.0,
-            "fcf_min":              0.0,
-            "revenue_cagr_5yr_min": 10.0,
-        })
+        return self.apply_filters(
+            {
+                "roe_min": 15.0,
+                "debt_to_equity_max": 1.0,
+                "fcf_min": 0.0,
+                "revenue_cagr_5yr_min": 10.0,
+            }
+        )
 
     def preset_value_pick(self) -> pd.DataFrame:
         """P/E < 35, P/B < 5.0, D/E < 2.0, Dividend Yield > 0.3%."""
-        return self.apply_filters({
-            "pe_max":              35.0,
-            "pb_max":               5.0,
-            "debt_to_equity_max":   2.0,
-            "dividend_yield_min":   0.3,
-        })
+        return self.apply_filters(
+            {
+                "pe_max": 35.0,
+                "pb_max": 5.0,
+                "debt_to_equity_max": 2.0,
+                "dividend_yield_min": 0.3,
+            }
+        )
 
     def preset_growth_accelerator(self) -> pd.DataFrame:
         """PAT CAGR 5yr > 15%, Revenue CAGR 5yr > 12%, D/E < 2.0."""
-        return self.apply_filters({
-            "pat_cagr_5yr_min":     15.0,
-            "revenue_cagr_5yr_min": 12.0,
-            "debt_to_equity_max":    2.0,
-        })
+        return self.apply_filters(
+            {
+                "pat_cagr_5yr_min": 15.0,
+                "revenue_cagr_5yr_min": 12.0,
+                "debt_to_equity_max": 2.0,
+            }
+        )
 
     def preset_dividend_champion(self) -> pd.DataFrame:
         """Dividend Yield > 1.5%, Dividend Payout < 80%, FCF > 0."""
-        df = self.apply_filters({
-            "dividend_yield_min": 1.5,
-            "fcf_min":            0.0,
-        })
+        df = self.apply_filters(
+            {
+                "dividend_yield_min": 1.5,
+                "fcf_min": 0.0,
+            }
+        )
         # Dividend payout filter (column is in P&L join)
         if "dividend_payout" in df.columns:
             div_pay = pd.to_numeric(df["dividend_payout"], errors="coerce")
@@ -392,12 +420,15 @@ class ScreenerEngine:
 
     def preset_turnaround_watch(self) -> pd.DataFrame:
         """Revenue CAGR 3yr > 8%, FCF positive, D/E declining YoY."""
-        df = self.apply_filters({
-            "revenue_cagr_3yr_min": 8.0,
-            "fcf_min":              0.0,
-        })
+        df = self.apply_filters(
+            {
+                "revenue_cagr_3yr_min": 8.0,
+                "fcf_min": 0.0,
+            }
+        )
         # D/E declining: latest D/E < prior year D/E
         if self._prior_de:
+
             def _de_declining(row: pd.Series) -> bool:
                 prior = self._prior_de.get(row["company_id"])
                 if prior is None:
@@ -414,12 +445,12 @@ class ScreenerEngine:
     def run_preset(self, name: str) -> pd.DataFrame:
         """Dispatch to the named preset. Raises ValueError for unknown names."""
         dispatch = {
-            "Quality Compounder":  self.preset_quality_compounder,
-            "Value Pick":          self.preset_value_pick,
-            "Growth Accelerator":  self.preset_growth_accelerator,
-            "Dividend Champion":   self.preset_dividend_champion,
+            "Quality Compounder": self.preset_quality_compounder,
+            "Value Pick": self.preset_value_pick,
+            "Growth Accelerator": self.preset_growth_accelerator,
+            "Dividend Champion": self.preset_dividend_champion,
             "Debt-Free Blue Chip": self.preset_debt_free_blue_chip,
-            "Turnaround Watch":    self.preset_turnaround_watch,
+            "Turnaround Watch": self.preset_turnaround_watch,
         }
         if name not in dispatch:
             raise ValueError(f"Unknown preset: '{name}'. Valid: {list(dispatch)}")
@@ -460,8 +491,8 @@ if __name__ == "__main__":
         print(f"  {'-'*62}")
         for _, row in result.head(10).iterrows():
             roe = row.get("return_on_equity_pct")
-            de  = row.get("debt_to_equity")
-            sc  = row.get("composite_quality_score")
+            de = row.get("debt_to_equity")
+            sc = row.get("composite_quality_score")
             print(
                 f"  {str(row['company_id']):<14} "
                 f"{str(row['company_name'])[:28]:<28} "

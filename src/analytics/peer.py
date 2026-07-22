@@ -31,16 +31,16 @@ logger = logging.getLogger(__name__)
 
 # ── Metrics: (column_in_financial_ratios, public_label, invert_rank) ──────────
 PEER_METRICS: List[Tuple[str, str, bool]] = [
-    ("return_on_equity_pct",            "ROE",                False),
-    ("return_on_capital_employed_pct",  "ROCE",               False),
-    ("net_profit_margin_pct",           "Net Profit Margin",  False),
-    ("debt_to_equity",                  "D/E",                True),   # lower = better
-    ("free_cash_flow_cr",               "FCF",                False),
-    ("pat_cagr_5yr",                    "PAT CAGR 5yr",       False),
-    ("revenue_cagr_5yr",                "Revenue CAGR 5yr",   False),
-    ("eps_cagr_5yr",                    "EPS CAGR 5yr",       False),
-    ("interest_coverage",               "Interest Coverage",  False),
-    ("asset_turnover",                  "Asset Turnover",     False),
+    ("return_on_equity_pct", "ROE", False),
+    ("return_on_capital_employed_pct", "ROCE", False),
+    ("net_profit_margin_pct", "Net Profit Margin", False),
+    ("debt_to_equity", "D/E", True),  # lower = better
+    ("free_cash_flow_cr", "FCF", False),
+    ("pat_cagr_5yr", "PAT CAGR 5yr", False),
+    ("revenue_cagr_5yr", "Revenue CAGR 5yr", False),
+    ("eps_cagr_5yr", "EPS CAGR 5yr", False),
+    ("interest_coverage", "Interest Coverage", False),
+    ("asset_turnover", "Asset Turnover", False),
 ]
 
 CREATE_TABLE_SQL = """
@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS peer_percentiles (
 # ─────────────────────────────────────────────────────────────────────────────
 # Data loading
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def _load_peer_groups(conn: sqlite3.Connection) -> pd.DataFrame:
     """Return peer_groups table as DataFrame."""
@@ -93,6 +94,7 @@ def _load_latest_ratios(conn: sqlite3.Connection) -> pd.DataFrame:
 # Percentile rank computation
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _percent_rank(series: pd.Series, invert: bool = False) -> pd.Series:
     """
     Compute PERCENT_RANK (0.0 – 1.0) for a Series.
@@ -100,7 +102,7 @@ def _percent_rank(series: pd.Series, invert: bool = False) -> pd.Series:
     invert=True → return (1 – rank) so lower value = higher percentile.
     """
     ranked = series.rank(method="average", na_option="keep") - 1
-    max_r  = ranked.max()
+    max_r = ranked.max()
     if max_r == 0:
         pr = pd.Series(0.5, index=series.index)
     else:
@@ -128,8 +130,8 @@ def compute_peer_percentiles(db_path: Path = config.DB_PATH) -> pd.DataFrame:
     * D/E percentile is inverted: lower D/E → higher rank.
     """
     with sqlite3.connect(db_path) as conn:
-        pg_df      = _load_peer_groups(conn)
-        ratios_df  = _load_latest_ratios(conn)
+        pg_df = _load_peer_groups(conn)
+        ratios_df = _load_latest_ratios(conn)
 
     # Join ratios onto peer groups
     merged = pg_df.merge(ratios_df, on="company_id", how="left")
@@ -150,33 +152,44 @@ def compute_peer_percentiles(db_path: Path = config.DB_PATH) -> pd.DataFrame:
             # Handle ICR "Debt Free" → substitute large numeric value
             if col == "interest_coverage":
                 debt_free_mask = group_df.get("icr_label") == "Debt Free"
-                group_df[col]  = pd.to_numeric(group_df[col], errors="coerce")
+                group_df[col] = pd.to_numeric(group_df[col], errors="coerce")
                 group_df.loc[debt_free_mask, col] = 9999.0
 
-            series    = pd.to_numeric(group_df[col], errors="coerce")
+            series = pd.to_numeric(group_df[col], errors="coerce")
             pr_series = _percent_rank(series, invert=invert)
 
             for _, row in group_df.iterrows():
                 val = series.loc[row.name]
-                pr  = pr_series.loc[row.name]
-                records.append({
-                    "company_id":      row["company_id"],
-                    "peer_group_name": group_name,
-                    "metric":          label,
-                    "value":           None if pd.isna(val) else round(float(val), 4),
-                    "percentile_rank": None if pd.isna(pr)  else round(float(pr),  4),
-                    "year":            int(row["year"]) if pd.notna(row.get("year", None)) else None,
-                })
+                pr = pr_series.loc[row.name]
+                records.append(
+                    {
+                        "company_id": row["company_id"],
+                        "peer_group_name": group_name,
+                        "metric": label,
+                        "value": None if pd.isna(val) else round(float(val), 4),
+                        "percentile_rank": None if pd.isna(pr) else round(float(pr), 4),
+                        "year": (
+                            int(row["year"])
+                            if pd.notna(row.get("year", None))
+                            else None
+                        ),
+                    }
+                )
 
     result = pd.DataFrame(records)
-    logger.info("Computed %d peer percentile records (%d groups, %d metrics)",
-                len(result), merged["peer_group_name"].nunique(), len(PEER_METRICS))
+    logger.info(
+        "Computed %d peer percentile records (%d groups, %d metrics)",
+        len(result),
+        merged["peer_group_name"].nunique(),
+        len(PEER_METRICS),
+    )
     return result
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SQLite persistence
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def populate_peer_percentiles_table(db_path: Path = config.DB_PATH) -> int:
     """
@@ -216,9 +229,7 @@ def populate_peer_percentiles_table(db_path: Path = config.DB_PATH) -> int:
             upserted += 1
 
         conn.commit()
-        total = conn.execute(
-            "SELECT COUNT(*) FROM peer_percentiles"
-        ).fetchone()[0]
+        total = conn.execute("SELECT COUNT(*) FROM peer_percentiles").fetchone()[0]
 
     logger.info("✓ peer_percentiles table: %d rows upserted, %d total", upserted, total)
     return total
@@ -236,10 +247,10 @@ def get_peer_percentiles(
     sql = "SELECT * FROM peer_percentiles WHERE 1=1"
     params: List = []
     if company_id:
-        sql    += " AND company_id = ?"
+        sql += " AND company_id = ?"
         params.append(company_id)
     if peer_group_name:
-        sql    += " AND peer_group_name = ?"
+        sql += " AND peer_group_name = ?"
         params.append(peer_group_name)
 
     try:

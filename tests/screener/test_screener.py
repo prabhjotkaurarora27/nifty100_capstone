@@ -22,12 +22,15 @@ import yaml
 # Fixtures
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture(scope="module")
 def engine():
     """Shared ScreenerEngine instance (loads data once for the module)."""
     import sys
+
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     from src.screener.engine import ScreenerEngine
+
     e = ScreenerEngine()
     e.load_data()
     return e
@@ -36,8 +39,10 @@ def engine():
 @pytest.fixture(scope="module")
 def db_path() -> Path:
     import sys
+
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
     import config
+
     return config.DB_PATH
 
 
@@ -45,6 +50,7 @@ def db_path() -> Path:
 def all_presets(engine):
     """Run all 6 presets once and cache results."""
     from src.screener.engine import ScreenerEngine
+
     return {name: engine.run_preset(name) for name in ScreenerEngine.PRESET_NAMES}
 
 
@@ -81,9 +87,13 @@ class TestEngineDataLoad:
         assert isinstance(df, pd.DataFrame), "data must be a DataFrame"
         assert len(df) > 0, "DataFrame must not be empty"
         required_cols = [
-            "company_id", "company_name", "broad_sector",
-            "return_on_equity_pct", "debt_to_equity",
-            "composite_quality_score", "sector_relative_score",
+            "company_id",
+            "company_name",
+            "broad_sector",
+            "return_on_equity_pct",
+            "debt_to_equity",
+            "composite_quality_score",
+            "sector_relative_score",
         ]
         for col in required_cols:
             assert col in df.columns, f"Missing column: {col}"
@@ -111,9 +121,9 @@ class TestQualityCompounderROE:
         """Every company in Quality Compounder must have ROE > 15%."""
         result = engine.preset_quality_compounder()
         roe = pd.to_numeric(result["return_on_equity_pct"], errors="coerce")
-        assert (roe > 15.0).all(), (
-            f"Some ROE values <= 15%: {result.loc[roe <= 15.0, ['company_id', 'return_on_equity_pct']]}"
-        )
+        assert (
+            roe > 15.0
+        ).all(), f"Some ROE values <= 15%: {result.loc[roe <= 15.0, ['company_id', 'return_on_equity_pct']]}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -145,7 +155,9 @@ class TestQualityCompounderCount:
         """Quality Compounder must return 5–50 companies."""
         result = engine.preset_quality_compounder()
         n = len(result)
-        assert 5 <= n <= 50, f"Quality Compounder returned {n} companies (expected 5–50)"
+        assert (
+            5 <= n <= 50
+        ), f"Quality Compounder returned {n} companies (expected 5–50)"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -175,9 +187,9 @@ class TestCompositeScoreRange:
         scores = pd.to_numeric(engine.data["composite_quality_score"], errors="coerce")
         scores = scores.dropna()
         assert len(scores) > 0, "No composite score values found"
-        assert (scores >= 0).all() and (scores <= 100).all(), (
-            f"Score out of range — min={scores.min():.2f}, max={scores.max():.2f}"
-        )
+        assert (scores >= 0).all() and (
+            scores <= 100
+        ).all(), f"Score out of range — min={scores.min():.2f}, max={scores.max():.2f}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -215,10 +227,10 @@ class TestITServicesROEPercentile:
             pytest.skip("peer_percentiles table does not exist")
 
         assert len(rows) > 0, "No IT Services ROE rows in peer_percentiles"
-        top_company_rank = rows[0][2]   # highest ROE company's percentile rank
-        assert top_company_rank == pytest.approx(1.0, abs=0.001), (
-            f"IT Services top ROE company has rank {top_company_rank} (expected 1.0)"
-        )
+        top_company_rank = rows[0][2]  # highest ROE company's percentile rank
+        assert top_company_rank == pytest.approx(
+            1.0, abs=0.001
+        ), f"IT Services top ROE company has rank {top_company_rank} (expected 1.0)"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -243,7 +255,9 @@ class TestFMCGPeerGroup:
                     WHERE peer_group_name = 'FMCG'
                     """
                 ).fetchone()[0]
-            assert n_pct == 7, f"peer_percentiles has {n_pct} FMCG companies (expected 7)"
+            assert (
+                n_pct == 7
+            ), f"peer_percentiles has {n_pct} FMCG companies (expected 7)"
         except sqlite3.OperationalError:
             pytest.skip("peer_percentiles table not populated yet")
 
@@ -256,15 +270,15 @@ class TestFinancialsSectorDEExemption:
 
     def test_financials_not_excluded_by_de_filter(self, engine):
         """Financials sector companies must NOT be excluded when D/E max filter applies."""
-        from src.screener.engine import ScreenerEngine
+
         # Apply a tight D/E filter that all Financials would fail on their own
         result = engine.apply_filters({"debt_to_equity_max": 0.5})
         fin_in_full = engine.data[engine.data["broad_sector"] == "Financials"]
         fin_in_result = result[result["broad_sector"] == "Financials"]
         # All Financials must appear in the filtered result
-        assert len(fin_in_result) == len(fin_in_full), (
-            f"Expected all {len(fin_in_full)} Financials, got {len(fin_in_result)}"
-        )
+        assert len(fin_in_result) == len(
+            fin_in_full
+        ), f"Expected all {len(fin_in_full)} Financials, got {len(fin_in_result)}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -287,25 +301,23 @@ class TestDebtFreeICRFilter:
         assert n_df > 0, "No 'Debt Free' rows found in financial_ratios"
 
         # Directly test the filter logic with synthetic engine data
-        import pandas as pd
-        import copy
 
         # Build a small test DataFrame with one Debt Free company
         test_df = engine.data.head(3).copy()
         # Force one row to be Debt Free with NULL interest_coverage
         test_df = test_df.reset_index(drop=True)
-        test_df.loc[0, "icr_label"]         = "Debt Free"
-        test_df.loc[0, "interest_coverage"]  = None
+        test_df.loc[0, "icr_label"] = "Debt Free"
+        test_df.loc[0, "interest_coverage"] = None
 
         # Temporarily replace engine._df
         original_df = engine._df
-        engine._df  = test_df
+        engine._df = test_df
         try:
             result = engine.apply_filters({"interest_coverage_min": 100.0})
             debt_free_in_result = result[result["icr_label"] == "Debt Free"]
-            assert len(debt_free_in_result) == 1, (
-                "Debt Free company was excluded by ICR filter (should always pass)"
-            )
+            assert (
+                len(debt_free_in_result) == 1
+            ), "Debt Free company was excluded by ICR filter (should always pass)"
         finally:
             engine._df = original_df
 
@@ -319,6 +331,7 @@ class TestPeerComparisonExcel:
     def test_peer_comparison_has_11_sheets(self):
         """output/peer_comparison.xlsx must have exactly 11 sheets."""
         import sys
+
         sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
         import config
         import openpyxl
@@ -329,6 +342,6 @@ class TestPeerComparisonExcel:
 
         wb = openpyxl.load_workbook(output_path)
         n_sheets = len(wb.sheetnames)
-        assert n_sheets == 11, (
-            f"peer_comparison.xlsx has {n_sheets} sheets (expected 11): {wb.sheetnames}"
-        )
+        assert (
+            n_sheets == 11
+        ), f"peer_comparison.xlsx has {n_sheets} sheets (expected 11): {wb.sheetnames}"

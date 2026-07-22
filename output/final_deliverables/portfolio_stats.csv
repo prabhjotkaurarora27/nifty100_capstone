@@ -1,0 +1,11 @@
+metric,raw_column,count,mean,std,P10,P25,P50_median,P75,P90
+ROE,return_on_equity_pct,91,123.9,637.14,8.37,11.67,16.72,26.01,48.28
+ROCE,return_on_capital_employed_pct,91,125.93,553.91,9.08,12.39,22.94,38.56,64.1
+NPM,net_profit_margin_pct,92,20.02,45.18,4.62,7.25,14.21,20.35,29.25
+OPM,operating_profit_margin_pct,91,34.67,27.51,9.84,16.01,25.83,40.15,84.04
+D/E,debt_to_equity,92,1.65,2.85,0.0,0.05,0.43,1.57,6.44
+Rev CAGR 5y,revenue_cagr_5yr,91,12.95,7.38,5.84,8.44,11.84,17.18,21.09
+PAT CAGR 5y,pat_cagr_5yr,84,21.11,21.55,4.36,9.86,16.28,23.78,39.28
+ICR,interest_coverage,91,126.13,485.94,1.61,3.18,11.36,58.09,192.29
+Asset Turn,asset_turnover,91,3.5,15.85,0.07,0.21,0.68,1.13,1.66
+FCF,free_cash_flow_cr,91,897.92,23254.51,-14556.0,-1315.0,1095.0,8447.0,20445.0

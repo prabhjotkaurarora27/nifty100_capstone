@@ -14,22 +14,36 @@ import sqlite3
 import sys
 from pathlib import Path
 
-import pytest
 
 # ── path setup ────────────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from src.etl.validator import (
-    check_dq01, check_dq02, check_dq03, check_dq04,
-    check_dq05, check_dq06, check_dq07, check_dq08,
-    check_dq09, check_dq10, check_dq11, check_dq12,
-    check_dq13, check_dq14, check_dq15, check_dq16,
-    run_all_checks, write_failures, _FIELDNAMES,
+    check_dq01,
+    check_dq02,
+    check_dq03,
+    check_dq04,
+    check_dq05,
+    check_dq06,
+    check_dq07,
+    check_dq08,
+    check_dq09,
+    check_dq10,
+    check_dq11,
+    check_dq12,
+    check_dq13,
+    check_dq14,
+    check_dq15,
+    check_dq16,
+    run_all_checks,
+    write_failures,
+    _FIELDNAMES,
 )
 
 
 # ── fixture helpers ────────────────────────────────────────────────────────────
+
 
 def _conn() -> sqlite3.Connection:
     return sqlite3.connect(":memory:")
@@ -87,6 +101,7 @@ def _make_docs(conn, rows):
 # DQ-01  PK uniqueness on companies.company_id
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ01:
 
     def test_no_duplicates_passes(self):
@@ -111,32 +126,49 @@ class TestDQ01:
 # DQ-02  Composite PK uniqueness (company_id, year)
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ02:
 
     def test_unique_composite_key_passes(self):
         conn = _conn()
-        _make_pl(conn, [("C1", 2021, 100, 20, 10, 5, 3, 13, 2),
-                         ("C1", 2022, 110, 22, 11, 5.5, 3.3, 14.3, 2)])
+        _make_pl(
+            conn,
+            [
+                ("C1", 2021, 100, 20, 10, 5, 3, 13, 2),
+                ("C1", 2022, 110, 22, 11, 5.5, 3.3, 14.3, 2),
+            ],
+        )
         assert check_dq02(conn) == []
 
     def test_duplicate_composite_key_fails(self):
         conn = _conn()
-        _make_pl(conn, [("C1", 2021, 100, 20, 10, 5, 3, 13, 2),
-                         ("C1", 2021, 110, 22, 11, 5.5, 3.3, 14.3, 2)])
+        _make_pl(
+            conn,
+            [
+                ("C1", 2021, 100, 20, 10, 5, 3, 13, 2),
+                ("C1", 2021, 110, 22, 11, 5.5, 3.3, 14.3, 2),
+            ],
+        )
         failures = check_dq02(conn)
         assert any(f["rule_id"] == "DQ-02" for f in failures)
         assert failures[0]["severity"] == "CRITICAL"
 
     def test_different_companies_same_year_passes(self):
         conn = _conn()
-        _make_pl(conn, [("C1", 2021, 100, 20, 10, 5, 3, 13, 2),
-                         ("C2", 2021, 200, 40, 20, 10, 6, 26, 4)])
+        _make_pl(
+            conn,
+            [
+                ("C1", 2021, 100, 20, 10, 5, 3, 13, 2),
+                ("C2", 2021, 200, 40, 20, 10, 6, 26, 4),
+            ],
+        )
         assert check_dq02(conn) == []
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # DQ-03  FK integrity
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestDQ03:
 
@@ -163,6 +195,7 @@ class TestDQ03:
 # ══════════════════════════════════════════════════════════════════════════════
 # DQ-04  Balance sheet balance
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestDQ04:
 
@@ -191,6 +224,7 @@ class TestDQ04:
 # DQ-05  OPM cross-check
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ05:
 
     def test_opm_within_range_passes(self):
@@ -211,6 +245,7 @@ class TestDQ05:
 # ══════════════════════════════════════════════════════════════════════════════
 # DQ-06  Positive sales
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestDQ06:
 
@@ -236,6 +271,7 @@ class TestDQ06:
 # DQ-07  No null company_id
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ07:
 
     def test_no_null_company_id_passes(self):
@@ -255,6 +291,7 @@ class TestDQ07:
 # DQ-08  No null year in financial tables
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ08:
 
     def test_no_null_year_passes(self):
@@ -273,6 +310,7 @@ class TestDQ08:
 # ══════════════════════════════════════════════════════════════════════════════
 # DQ-09  Net cash check
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestDQ09:
 
@@ -295,6 +333,7 @@ class TestDQ09:
 # DQ-10  Tax rate 0–60%
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ10:
 
     def test_valid_tax_rate_passes(self):
@@ -316,6 +355,7 @@ class TestDQ10:
 # DQ-11  Dividend payout ≤ cap
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ11:
 
     def test_dividend_within_cap_passes(self):
@@ -336,6 +376,7 @@ class TestDQ11:
 # ══════════════════════════════════════════════════════════════════════════════
 # DQ-12  URL format check
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestDQ12:
 
@@ -361,6 +402,7 @@ class TestDQ12:
 # DQ-13  No duplicate tickers
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ13:
 
     def test_unique_tickers_passes(self):
@@ -379,6 +421,7 @@ class TestDQ13:
 # ══════════════════════════════════════════════════════════════════════════════
 # DQ-14  EPS sign consistency
 # ══════════════════════════════════════════════════════════════════════════════
+
 
 class TestDQ14:
 
@@ -405,6 +448,7 @@ class TestDQ14:
 # DQ-15  BSE code format
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ15:
 
     def test_valid_bse_code_passes(self):
@@ -430,15 +474,19 @@ class TestDQ15:
 # DQ-16  Year coverage
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDQ16:
 
     def test_sufficient_coverage_passes(self):
         conn = _conn()
-        _make_pl(conn, [
-            ("C1", 2019, 100, 20, 10, 5, 3, 13, 2),
-            ("C1", 2020, 110, 22, 11, 5.5, 3.3, 14, 2),
-            ("C1", 2021, 120, 24, 12, 6.0, 3.6, 15.6, 2),
-        ])
+        _make_pl(
+            conn,
+            [
+                ("C1", 2019, 100, 20, 10, 5, 3, 13, 2),
+                ("C1", 2020, 110, 22, 11, 5.5, 3.3, 14, 2),
+                ("C1", 2021, 120, 24, 12, 6.0, 3.6, 15.6, 2),
+            ],
+        )
         assert check_dq16(conn) == []
 
     def test_insufficient_coverage_fails(self):
@@ -451,11 +499,14 @@ class TestDQ16:
 
     def test_exactly_min_coverage_passes(self):
         conn = _conn()
-        _make_pl(conn, [
-            ("C2", 2019, 50, 10, 5, 2.5, 1.5, 6.5, 1),
-            ("C2", 2020, 55, 11, 5.5, 2.75, 1.65, 7.15, 1),
-            ("C2", 2021, 60, 12, 6, 3.0, 1.8, 7.8, 1),
-        ])
+        _make_pl(
+            conn,
+            [
+                ("C2", 2019, 50, 10, 5, 2.5, 1.5, 6.5, 1),
+                ("C2", 2020, 55, 11, 5.5, 2.75, 1.65, 7.15, 1),
+                ("C2", 2021, 60, 12, 6, 3.0, 1.8, 7.8, 1),
+            ],
+        )
         assert check_dq16(conn) == []
 
 
@@ -463,19 +514,23 @@ class TestDQ16:
 # run_all_checks  &  write_failures  – orchestrator tests
 # ══════════════════════════════════════════════════════════════════════════════
 
+
 class TestOrchestrator:
 
     def _full_conn(self):
         conn = _conn()
         _make_companies(conn, [("C1", "REL", "500325"), ("C2", "TCS", "532540")])
-        _make_pl(conn, [
-            ("C1", 2019, 100, 20, 50, 5.0, 25, 75, 20),
-            ("C1", 2020, 110, 22, 55, 5.5, 27.5, 82.5, 22),
-            ("C1", 2021, 120, 24, 60, 6.0, 30, 90, 24),
-            ("C2", 2019, 200, 40, 100, 10, 50, 150, 40),
-            ("C2", 2020, 220, 44, 110, 11, 55, 165, 44),
-            ("C2", 2021, 240, 48, 120, 12, 60, 180, 48),
-        ])
+        _make_pl(
+            conn,
+            [
+                ("C1", 2019, 100, 20, 50, 5.0, 25, 75, 20),
+                ("C1", 2020, 110, 22, 55, 5.5, 27.5, 82.5, 22),
+                ("C1", 2021, 120, 24, 60, 6.0, 30, 90, 24),
+                ("C2", 2019, 200, 40, 100, 10, 50, 150, 40),
+                ("C2", 2020, 220, 44, 110, 11, 55, 165, 44),
+                ("C2", 2021, 240, 48, 120, 12, 60, 180, 48),
+            ],
+        )
         return conn
 
     def test_run_all_returns_list(self):
@@ -499,10 +554,12 @@ class TestOrchestrator:
 
     def test_write_failures_creates_csv(self, tmp_path):
         import csv as _csv
+
         out = tmp_path / "validation_failures.csv"
         failures = [{k: "" for k in _FIELDNAMES}]
         # Patch the output path temporarily
         import src.etl.validator as v
+
         orig = v.FAILURES_FILE
         v.FAILURES_FILE = out
         write_failures(failures)

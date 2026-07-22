@@ -30,6 +30,7 @@ DATA_RAW_DIR: Path = cfg.DATA_RAW_DIR
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 
+
 def _fmt_size(n_bytes: int) -> str:
     for unit in ("B", "KB", "MB", "GB"):
         if n_bytes < 1024:
@@ -42,6 +43,7 @@ def _inspect_xlsx(path: Path) -> dict:
     """Peek at an xlsx without loading the whole file."""
     try:
         import openpyxl
+
         wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
         sheets = wb.sheetnames
         ws = wb.active
@@ -52,11 +54,11 @@ def _inspect_xlsx(path: Path) -> dict:
         wb.close()
         col_names = [str(h).strip() if h is not None else "" for h in header]
         return {
-            "sheets":    sheets,
-            "rows":      row_count,       # data rows (excl. header)
-            "cols":      len(col_names),
+            "sheets": sheets,
+            "rows": row_count,  # data rows (excl. header)
+            "cols": len(col_names),
             "col_names": col_names,
-            "error":     None,
+            "error": None,
         }
     except Exception as exc:
         return {"sheets": [], "rows": 0, "cols": 0, "col_names": [], "error": str(exc)}
@@ -70,11 +72,11 @@ def _inspect_csv(path: Path) -> dict:
             header = next(reader, [])
             row_count = sum(1 for _ in reader)
         return {
-            "sheets":    ["(csv)"],
-            "rows":      row_count,
-            "cols":      len(header),
+            "sheets": ["(csv)"],
+            "rows": row_count,
+            "cols": len(header),
             "col_names": header,
-            "error":     None,
+            "error": None,
         }
     except Exception as exc:
         return {"sheets": [], "rows": 0, "cols": 0, "col_names": [], "error": str(exc)}
@@ -87,8 +89,11 @@ def inspect_directory(directory: Path = DATA_RAW_DIR) -> list[dict]:
         return []
 
     files = sorted(
-        [p for p in directory.iterdir()
-         if p.is_file() and p.suffix.lower() in (".xlsx", ".xls", ".csv")],
+        [
+            p
+            for p in directory.iterdir()
+            if p.is_file() and p.suffix.lower() in (".xlsx", ".xls", ".csv")
+        ],
         key=lambda p: p.name.lower(),
     )
 
@@ -106,7 +111,7 @@ def inspect_directory(directory: Path = DATA_RAW_DIR) -> list[dict]:
             info = _inspect_csv(path)
 
         info["filename"] = path.name
-        info["size"]     = size
+        info["size"] = size
         results.append(info)
 
     return results
@@ -118,7 +123,7 @@ def _print_report(results: list[dict]) -> None:
         return
 
     # ── header ────────────────────────────────────────────────────────────────
-    name_w  = max(len(r["filename"]) for r in results) + 2
+    name_w = max(len(r["filename"]) for r in results) + 2
     sheet_w = max(len(", ".join(r["sheets"])) for r in results) + 2
     sheet_w = max(sheet_w, 12)
     col_sample_w = 60
@@ -126,26 +131,32 @@ def _print_report(results: list[dict]) -> None:
     sep = "=" * (name_w + sheet_w + 7 + 7 + col_sample_w + 10)
     print()
     print(sep)
-    print(f"  {'Filename':<{name_w}}  {'Sheet(s)':<{sheet_w}}  {'Rows':>6}  {'Cols':>5}  Column names (first 5)")
+    print(
+        f"  {'Filename':<{name_w}}  {'Sheet(s)':<{sheet_w}}  {'Rows':>6}  {'Cols':>5}  Column names (first 5)"
+    )
     print(sep)
 
     for r in results:
-        name   = r["filename"]
+        name = r["filename"]
         sheets = ", ".join(r["sheets"]) if r["sheets"] else "—"
-        rows   = r["rows"]
-        cols   = r["cols"]
+        rows = r["rows"]
+        cols = r["cols"]
         sample = ", ".join(r["col_names"][:5])
         size_s = _fmt_size(r["size"])
-        err    = r.get("error")
+        err = r.get("error")
 
         if err:
             print(f"  {name:<{name_w}}  ❌ ERROR: {err}")
         else:
-            print(f"  {name:<{name_w}}  {sheets:<{sheet_w}}  {rows:>6}  {cols:>5}  {sample}")
+            print(
+                f"  {name:<{name_w}}  {sheets:<{sheet_w}}  {rows:>6}  {cols:>5}  {sample}"
+            )
             if len(r["col_names"]) > 5:
                 extra = ", ".join(r["col_names"][5:10])
                 ellipsis = "…" if len(r["col_names"]) > 10 else ""
-                print(f"  {'':>{name_w}}  {'':>{sheet_w}}  {'':>6}  {'':>5}  ({extra}{ellipsis})")
+                print(
+                    f"  {'':>{name_w}}  {'':>{sheet_w}}  {'':>6}  {'':>5}  ({extra}{ellipsis})"
+                )
         print(f"  {'':>{name_w}}  size: {size_s}")
         print()
 
@@ -160,10 +171,10 @@ def _print_loader_map_hints(results: list[dict]) -> None:
     from src.etl.loader import SOURCE_FILES
 
     expected = {e["filename"] for e in SOURCE_FILES}
-    found    = {r["filename"] for r in results}
+    found = {r["filename"] for r in results}
 
-    missing  = expected - found
-    extra    = found - expected
+    missing = expected - found
+    extra = found - expected
 
     if missing:
         print("⚠️  Files expected by loader.py but NOT found in data/raw/:")

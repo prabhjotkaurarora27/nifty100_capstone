@@ -73,9 +73,9 @@ def parse_analysis_file():
     # Export output/analysis_parsed.csv
     parsed_csv = OUTPUT_DIR / "analysis_parsed.csv"
     if not parsed_df.empty:
-        parsed_df[
-            ["company_id", "metric_type", "period_years", "value_pct"]
-        ].to_csv(parsed_csv, index=False)
+        parsed_df[["company_id", "metric_type", "period_years", "value_pct"]].to_csv(
+            parsed_csv, index=False
+        )
         print(f"✅ Exported {len(parsed_df)} parsed records to {parsed_csv.name}")
     else:
         pd.DataFrame(
@@ -120,8 +120,7 @@ def cross_validate_cagr(parsed_df: pd.DataFrame) -> pd.DataFrame:
 
     for metric_type, db_col in mapping.items():
         subset = parsed_df[
-            (parsed_df["metric_type"] == metric_type)
-            & (parsed_df["period_years"] == 5)
+            (parsed_df["metric_type"] == metric_type) & (parsed_df["period_years"] == 5)
         ]
         for _, row in subset.iterrows():
             cid = row["company_id"]
