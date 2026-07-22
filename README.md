@@ -1,223 +1,113 @@
-# Nifty 100 Financial Data Pipeline
+# Nifty 100 Financial Data Pipeline & Analytics Dashboard
 
-> **Sprint 1: Data Foundation** — A production-grade ETL pipeline for Nifty 100 company financials, built as a capstone project for the Bluestock Fintech internship.
-
----
-
-## Architecture
-
-```
-data/raw/  (12 Excel/CSV files)
-     │
-     ▼
-┌─────────────────────────────────────────────────────┐
-│                   ETL Pipeline                      │
-│                                                     │
-│  file_inspector.py  ──► normaliser.py               │
-│                              │                      │
-│                         loader.py                   │
-│                              │                      │
-│                    load_pipeline.py                  │
-│                    (orchestrator)                    │
-└──────────────────────┬──────────────────────────────┘
-                       │
-                       ▼
-              db/nifty100.db  (SQLite)
-              ┌──────────────────────┐
-              │  11 tables           │
-              │  12 indexes          │
-              │  3 views             │
-              └──────────┬───────────┘
-                         │
-             ┌───────────┼───────────┐
-             ▼           ▼           ▼
-        validator.py  demo.py   exploratory_queries.py
-        (16 DQ rules)          (10 analysis queries)
-             │
-             ▼
-   output/validation_failures.csv
-   output/load_audit.csv
-   output/manual_review_report.txt
-```
+> **Production-Grade Capstone Project** — End-to-End Financial Data Engineering, Quality Screening, Valuation Analytics & 8-Screen Interactive Streamlit Dashboard for 92 Nifty 100 Companies.
 
 ---
 
-## Quickstart
+## 🚀 Quickstart & Dashboard Launch
 
 ```bash
 # 1. Clone and enter project
 git clone <your-repo-url>
 cd nifty100_capstone
 
-# 2. Create venv and install dependencies
-python -m venv venv && source venv/bin/activate
+# 2. Create venv and activate
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Initialise database schema
-make schema
-
-# 4. Place Excel/CSV files in data/raw/, then load
-make load
-
-# 5. Run the full Sprint 1 demo
-python src/etl/demo.py
+# 3. Launch 8-Screen Interactive Streamlit Dashboard
+streamlit run src/dashboard/app.py
 ```
+> The dashboard will open automatically in your browser at `http://localhost:8501`.
 
 ---
 
-## Directory Structure
+## 📊 Dashboard Architecture & 8 Interactive Screens
+
+The Streamlit dashboard (`src/dashboard/app.py`) features a wide-layout interface, sidebar navigation, `@st.cache_data(ttl=600)` caching, and 8 dedicated analytics pages:
+
+| Page | Screen | Primary Features & Analytics |
+| :--- | :--- | :--- |
+| **01** | **📊 Home Dashboard** | 6 KPI tiles (Avg ROE, Median P/E, Median D/E, Total Companies, Median Rev CAGR, Debt-Free Count), 11-sector Plotly donut chart, Top 5 Quality Compounders table, Financial year selector (2019–2024). |
+| **02** | **🏢 Company Profile** | Search by name/ticker, corporate metadata card, 6 latest KPI metrics, Plotly 10-year Revenue & Net Profit bar chart, ROE/ROCE dual-axis line chart, Green ✅ Pros & Red ❌ Cons badges. |
+| **03** | **🔍 Financial Screener** | 10 metric sliders in sidebar, 6 preset filter buttons (Quality, Value, Growth, Dividend, Debt-Free, Turnaround), live result count, interactive DataFrame, CSV export download button. |
+| **04** | **🥊 Peer Comparison** | 11 peer group selector, 8-axis Plotly `Scatterpolar` radar chart comparing target company vs peer group average, side-by-side KPI matrix with Gold benchmark row highlight. |
+| **05** | **📉 Financial Trends** | Company selector + multi-metric overlay selector (up to 3 metrics), 10-year line chart with YoY % growth labels on data points, raw ratios historical table. |
+| **06** | **🌐 Sector Analytics** | Sector dropdown, Plotly bubble chart (X = Revenue, Y = ROE, Size = Market Cap, Color = Sub-sector), sector median KPI comparison bar chart. |
+| **07** | **🧱 Capital Allocation** | Plotly Treemap of all 92 companies grouped by 8 capital allocation archetypes (Reinvestor, Shareholder Returns, etc.), interactive drill-down company lists. |
+| **08** | **📑 Annual Reports** | Company selector, list of available annual report financial years, clickable BSE PDF report links, Red "Report unavailable" 404 error badges. |
+
+---
+
+## 💡 Valuation Module (`src/analytics/valuation.py`)
+
+Run the automated valuation engine to compute FCF Yield, 5-year Median P/E, Sector Median P/E, and Overvaluation Flags:
+
+```bash
+python src/analytics/valuation.py
+```
+
+- **Output Reports**:
+  - `output/valuation_summary.xlsx` — 92 rows styled Excel report with conditional flag coloring.
+  - `output/valuation_flags.csv` — Target list of Caution ($P/E > 1.5\times \text{Sector Median}$) and Discount ($P/E < 0.7\times \text{Sector Median}$) companies.
+
+---
+
+## 🧪 Testing & Quality Assurance
+
+Run the comprehensive unit test suite across all 4 sprints (199 total tests):
+
+```bash
+PYTHONPATH=. venv/bin/pytest tests/ -v
+```
+
+- **Sprint 1 (ETL)**: 101 tests
+- **Sprint 2 (KPIs)**: 20 tests
+- **Sprint 3 (Screener & Peer)**: 14 tests
+- **Sprint 4 (Dashboard & Valuation)**: 12 tests
+
+---
+
+## 📁 Repository Structure
 
 ```
 nifty100_capstone/
-├── config.py                   # Central config (loaded from .env)
-├── .env                        # Environment variables (not in git)
-├── .gitignore
-├── Makefile                    # 12 make targets
-├── requirements.txt
-├── data/
-│   ├── raw/                    # 12 source Excel/CSV files
-│   └── processed/
+├── config.py                   # Central config
+├── config/
+│   └── screener_config.yaml    # Screener thresholds config
 ├── db/
-│   ├── schema.sql              # 11 tables, 12 indexes, 3 views
-│   └── init_db.py              # Schema initialiser + verifier
-├── notebooks/
-│   ├── exploratory_queries.sql # 10 SQL queries
-│   └── exploratory_queries.py  # Same queries, Python + tabulate
-├── output/                     # Generated reports (gitignored)
-│   ├── load_audit.csv
-│   ├── validation_failures.csv
-│   ├── manual_review_report.txt
-│   └── pipeline.log
+│   ├── schema.sql              # Database schema
+│   └── nifty100.db             # SQLite Database (92 companies)
+├── output/                     # Excel & CSV generated outputs
+│   ├── screener_output.xlsx
+│   ├── peer_comparison.xlsx
+│   ├── valuation_summary.xlsx
+│   └── valuation_flags.csv
+├── pages/                      # 8 Streamlit Screen Files
+│   ├── 01_home.py
+│   ├── 02_profile.py
+│   ├── 03_screener.py
+│   ├── 04_peers.py
+│   ├── 05_trends.py
+│   ├── 06_sectors.py
+│   ├── 07_capital.py
+│   └── 08_reports.py
 ├── reports/
-│   ├── sprint1_review.md       # Sprint 1 review template
-│   └── retrospective.md        # Sprint 1 retrospective
+│   ├── radar_charts/           # 91 polar radar chart PNGs
+│   ├── sprint1_review.md
+│   ├── sprint2_retrospective.md
+│   ├── sprint3_retrospective.md
+│   └── sprint4_retrospective.md
 ├── src/
-│   └── etl/
-│       ├── normaliser.py       # normalize_year(), normalize_ticker()
-│       ├── loader.py           # 12-file ETL loader
-│       ├── validator.py        # 16 DQ rules
-│       ├── load_pipeline.py    # Orchestrator (reset→load→verify)
-│       ├── file_inspector.py   # Scan data/raw/ before loading
-│       ├── manual_review.py    # Sample 5 companies, DQ review
-│       ├── fix_loader.py       # Retry SKIPPED/ERROR files
-│       └── demo.py             # Sprint 1 end-to-end demo
-└── tests/
-    └── etl/
-        ├── test_loader.py      # 55 tests
-        └── test_validator.py   # 46 tests
+│   ├── etl/                    # Sprint 1 ETL Pipeline
+│   ├── analytics/              # Sprint 2 & 3 Analytics Engines & Valuation
+│   ├── screener/               # Sprint 3 Quality Screener Engine
+│   └── dashboard/              # Sprint 4 Dashboard Scaffold & Caching
+│       ├── app.py              # Streamlit Main App Entrypoint
+│       └── utils/db.py         # Cached SQLite queries (@st.cache_data)
+└── tests/                      # 199 Unit Tests
+    ├── etl/
+    ├── kpi/
+    ├── screener/
+    └── dashboard/
 ```
-
----
-
-## Makefile Targets
-
-| Target | Command | Description |
-|--------|---------|-------------|
-| `make install` | `pip install -r requirements.txt` | Install all dependencies |
-| `make schema` | `python db/init_db.py` | Create / reset SQLite schema |
-| `make load` | `python src/etl/load_pipeline.py` | Full load: reset → ETL → verify |
-| `make inspect` | `python src/etl/file_inspector.py` | Preview files in `data/raw/` |
-| `make validate` | `python src/etl/validator.py` | Run 16 DQ rules |
-| `make review` | `python src/etl/manual_review.py` | Sample 5 companies, write review |
-| `make fix` | `python src/etl/fix_loader.py` | Retry SKIPPED/ERROR files |
-| `make demo` | `python src/etl/demo.py` | End-to-end Sprint 1 demo |
-| `make explore` | `python notebooks/exploratory_queries.py` | Run 10 analytical queries |
-| `make test` | `pytest tests/etl/ --tb=short -q` | Run 101 unit tests |
-| `make clean` | Remove `__pycache__`, `.pyc` | Clean build artefacts |
-| `make reset` | `rm db/nifty100.db && make schema` | Drop and recreate DB |
-
----
-
-## Data Quality Rules (16)
-
-| Rule | Severity | Check |
-|------|----------|-------|
-| DQ-01 | CRITICAL | PK uniqueness on `companies.company_id` |
-| DQ-02 | CRITICAL | Composite PK `(company_id, year)` in P&L, BS, CF |
-| DQ-03 | CRITICAL | FK integrity — child tables → companies |
-| DQ-04 | WARNING | Balance sheet: `assets ≈ liabilities + equity` (±1%) |
-| DQ-05 | WARNING | OPM: `operating_profit / revenue` within configured range |
-| DQ-06 | WARNING | Positive sales: `revenue > 0` |
-| DQ-07 | CRITICAL | No null `company_id` in any table |
-| DQ-08 | CRITICAL | No null `year` in financial tables |
-| DQ-09 | WARNING | Net cash: `op + inv + fin ≈ net_cash` (±5%) |
-| DQ-10 | WARNING | Tax rate: 0% – 60% |
-| DQ-11 | WARNING | Dividend payout ratio ≤ configured cap |
-| DQ-12 | INFO | URL format check in `documents` table |
-| DQ-13 | CRITICAL | No duplicate tickers in `companies` |
-| DQ-14 | WARNING | EPS sign consistency with net profit |
-| DQ-15 | WARNING | BSE code is 6-digit numeric |
-| DQ-16 | INFO | Year coverage ≥ `DQ_MIN_YEAR_COVERAGE` per company |
-
----
-
-## Expected Row Counts
-
-| Table | Expected Rows | Tolerance |
-|-------|--------------|-----------|
-| companies | 92 | Exact |
-| profitandloss | ~1276 | ±10% |
-| balancesheet | ~1312 | ±10% |
-| cashflow | ~1187 | ±10% |
-| stock_prices | 5520 | Exact |
-| sectors | varies | — |
-| financial_ratios | varies | — |
-| peer_groups | varies | — |
-
----
-
-## Tech Stack
-
-| Component | Library / Tool |
-|-----------|---------------|
-| Language | Python 3.9.6 |
-| Database | SQLite 3 (via `sqlite3` stdlib) |
-| Data loading | `pandas` 2.1.4, `openpyxl` 3.1.2 |
-| Normalisation | Custom (`normaliser.py`) |
-| Logging | `loguru` 0.7.2 |
-| Progress bars | `tqdm` 4.66.1 |
-| Table output | `tabulate` |
-| Config | `python-dotenv` 1.0.1 |
-| Testing | `pytest` 8.0.0, `pytest-cov` 4.1.0 |
-| Dashboard (Sprint 2) | `streamlit` 1.31.0 |
-| API (Sprint 2) | `flask` 3.0.1 |
-
----
-
-## Running Tests
-
-```bash
-source venv/bin/activate
-
-# Run full suite with coverage
-make test
-
-# Verbose with test names
-pytest tests/etl/ -v
-
-# Single file
-pytest tests/etl/test_loader.py -v
-pytest tests/etl/test_validator.py -v
-```
-
-**Test count:** 101 (55 loader + 46 validator)
-
----
-
-## Sprint 1 Exit Criteria
-
-- [ ] All 12 source files loaded without ERROR
-- [ ] `companies` table = 92 rows
-- [ ] `PRAGMA foreign_key_check` = 0 violations
-- [ ] 0 CRITICAL DQ failures
-- [ ] 101 unit tests passing
-- [ ] Sprint review report completed and committed
-
----
-
-## Author
-
-**Internship:** Bluestock Fintech — Nifty 100 Capstone Project
-**Sprint:** Sprint 1 — Data Foundation
-**Python version:** 3.9.6 | **OS:** macOS
-**Tag:** `v1.0`
